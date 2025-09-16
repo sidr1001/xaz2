@@ -11,12 +11,14 @@ use App\Controller\Admin\AuthController as AdminAuthController;
 use App\Controller\Admin\DashboardController;
 use App\Controller\Admin\ToursController;
 use App\Controller\Admin\AgentsController;
+use App\Controller\Admin\TouristsController as AdminTouristsController;
 use App\Controller\Admin\BookingsController as AdminBookingsController;
 use App\Controller\Admin\PaymentsController as AdminPaymentsController;
 use App\Controller\Admin\SettingsController as AdminSettingsController;
 use App\Controller\Agent\AuthController as AgentAuthController;
 use App\Controller\Agent\DashboardController as AgentDashboardController;
 use App\Controller\Agent\BookingsController as AgentBookingsController;
+use App\Controller\Agent\PaymentsController as AgentPaymentsController;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use App\Controller\PaymentWebhookController;
@@ -57,6 +59,9 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
     $group->get('/agents/{id}/edit', [AgentsController::class, 'edit']);
     $group->post('/agents/{id}/update', [AgentsController::class, 'update']);
     $group->post('/agents/{id}/delete', [AgentsController::class, 'delete']);
+
+    // Tourists list
+    $group->get('/tourists', [AdminTouristsController::class, 'index']);
     // Bookings
     $group->get('/bookings', [AdminBookingsController::class, 'index']);
     $group->get('/bookings/{id}', [AdminBookingsController::class, 'view']);
@@ -83,10 +88,14 @@ $app->group('/agent', function (RouteCollectorProxy $group) {
     $group->get('/bookings', [AgentBookingsController::class, 'index']);
     $group->get('/bookings/{id}', [AgentBookingsController::class, 'view']);
     $group->post('/bookings/{id}/documents', [AgentBookingsController::class, 'generateDocuments']);
+    $group->get('/tourists', [\App\Controller\Agent\TouristsController::class, 'index']);
     $group->get('/tours/{tour_id}/book', [AgentBookingsController::class, 'create']);
     $group->post('/bookings/store', [AgentBookingsController::class, 'store']);
     $group->get('/tours/{tour_id}/pricing', [\App\Controller\Agent\PricingController::class, 'form']);
     $group->post('/tours/{tour_id}/pricing', [\App\Controller\Agent\PricingController::class, 'save']);
+    $group->get('/bookings/{booking_id}/payment/invoice', [AgentPaymentsController::class, 'invoice']);
+    $group->get('/bookings/{booking_id}/payment/online', [AgentPaymentsController::class, 'online']);
+    $group->get('/api/tourists/search', [\App\Controller\Agent\TouristsController::class, 'search']);
 })->add(new AgentAuthMiddleware());
 
 // 404 handler

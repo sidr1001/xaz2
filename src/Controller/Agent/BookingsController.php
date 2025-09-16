@@ -22,6 +22,53 @@ final class BookingsController
         return $view->render($response, 'agent/bookings/index.twig', ['bookings' => $list]);
     }
 
+    public function view(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT * FROM bookings WHERE id=:id AND agent_id=:a');
+        $stmt->execute([':id' => $id, ':a' => $agentId]);
+        $booking = $stmt->fetch();
+        if (!$booking) {
+            $view = Twig::fromRequest($request);
+            return $view->render($response->withStatus(404), '404.twig');
+        }
+        $tourists = $pdo->prepare('SELECT * FROM tourists WHERE booking_id=:b');
+        $tourists->execute([':b' => $id]);
+        $touristsList = $tourists->fetchAll();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 'agent/bookings/view.twig', [
+            'booking' => $booking,
+            'tourists' => $touristsList,
+        ]);
+    }
+
+    public function generateDocuments(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        // check access
+        $stmt = $pdo->prepare('SELECT * FROM bookings WHERE id=:id AND agent_id=:a');
+        $stmt->execute([':id' => $id, ':a' => $agentId]);
+        $booking = $stmt->fetch();
+        if (!$booking) {
+            $response->getBody()->write(json_encode(['ok'=>false, 'error'=>'Not found']));
+            return $response->withHeader('Content-Type','application/json');
+        }
+
+        $files = [];
+        foreach (['contract','insurance','voucher','tickets'] as $doc) {
+            $filepath = dirname(__DIR__, 3) . '/public/uploads/documents/' . $id . '/' . $doc . '.pdf';
+            PdfService::renderTemplateToFile($request, 'documents/' . $doc . '.twig', ['booking' => $booking], $filepath);
+            $files[$doc] = str_replace(dirname(__DIR__, 3) . '/public', '', $filepath);
+        }
+
+        $response->getBody()->write(json_encode(['ok'=>true, 'files'=>$files], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
+    }
     public function create(Request $request, Response $response, array $args): Response
     {
         $tourId = (int)($args['tour_id'] ?? 0);

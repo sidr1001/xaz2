@@ -30,6 +30,52 @@ $(function(){
     </div>`
   }
   let i=0; $('#addT').on('click', function(){ $('#tlist').append(t(i++)) }); $('#addT').click();
+
+  function ensureList($inp){
+    const $wrap = $inp.parent();
+    $wrap.css('position','relative');
+    let $list = $wrap.find('.autocomplete-list');
+    if($list.length===0){
+      $list = $('<div class="list-group autocomplete-list"></div>').css({position:'absolute', top: '100%', left:0, right:0, 'z-index':10, 'max-height':'200px', overflow:'auto'});
+      $wrap.append($list);
+    }
+    return $list;
+  }
+
+  $('#tlist').on('input', '[name^="tourists[\"]'][name$='[full_name]']', function(){
+    const $inp = $(this);
+    const q = $inp.val();
+    const $list = ensureList($inp);
+    if(q.length < 2){ $list.empty().hide(); return; }
+    $.get('/agent/api/tourists/search', { q }, function(resp){
+      if(!resp.ok || resp.items.length===0){ $list.empty().hide(); return; }
+      $list.empty();
+      resp.items.forEach(function(it){
+        const label = (it.full_name||'') + (it.birth_date? ' • '+it.birth_date:'') + (it.passport? ' • '+it.passport:'');
+        const $btn = $('<button type="button" class="list-group-item list-group-item-action"></button>').text(label);
+        $btn.data('it', it);
+        $list.append($btn);
+      });
+      $list.show();
+    });
+  });
+
+  $('#tlist').on('click', '.autocomplete-list .list-group-item', function(){
+    const it = $(this).data('it') || {};
+    const $card = $(this).closest('.card');
+    const $fio = $card.find('[name$="[full_name]"]');
+    const nameAttr = $fio.attr('name');
+    const idxMatch = nameAttr && nameAttr.match(/tourists\[(\d+)\]\[full_name\]/);
+    const idx = idxMatch ? idxMatch[1] : null;
+    if(idx!==null){
+      $card.find('[name="tourists['+idx+'][full_name]"]').val(it.full_name||'');
+      $card.find('[name="tourists['+idx+'][birth_date]"]').val(it.birth_date||'');
+      $card.find('[name="tourists['+idx+'][passport]"]').val(it.passport||'');
+      $card.find('[name="tourists['+idx+'][phone]"]').val(it.phone||'');
+      $card.find('[name="tourists['+idx+'][email]"]').val(it.email||'');
+    }
+    $(this).parent().hide().empty();
+  });
 })
 </script>
 {% endblock %}
