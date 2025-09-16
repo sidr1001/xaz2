@@ -1,0 +1,20 @@
+{% extends 'agent/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Моя цена на тур #{{ tour_id }}</h1>
+<form method="post" action="/agent/tours/{{ tour_id }}/pricing" class="row g-3">
+  <div class="col-md-4">
+    <label class="form-label">Тип цены</label>
+    <select class="form-select" name="type">
+      <option value="fixed" {{ (pricing and pricing.type=='fixed') ? 'selected' }}>Фиксированная (₽)</option>
+      <option value="percent" {{ (pricing and pricing.type=='percent') ? 'selected' }}>Процент (%)</option>
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Значение</label>
+    <input class="form-control" name="value" type="number" step="0.01" value="{{ pricing.value|default('') }}">
+  </div>
+  <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
+</form>
+{% endblock %}
+

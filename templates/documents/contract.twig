@@ -1,0 +1,5 @@
+<h1>Договор оказания услуг</h1>
+<p>Заявка № {{ booking.id }} от {{ booking.created_at }}</p>
+<p>Тур: {{ booking.tour_title|e }}</p>
+<p>Клиент: {{ booking.customer_name|e }} ({{ booking.customer_phone|e }}, {{ booking.customer_email|e }})</p>
+

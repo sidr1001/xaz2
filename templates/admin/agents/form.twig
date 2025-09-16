@@ -1,0 +1,27 @@
+{% extends 'admin/layout.twig' %}
+
+{% set is_edit = agent is defined %}
+
+{% block content %}
+<h1 class="mb-3">{{ is_edit ? 'Редактировать агента' : 'Добавить агента' }}</h1>
+
+<form method="post" action="{{ is_edit ? '/admin/agents/' ~ agent.id ~ '/update' : '/admin/agents/store' }}" class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Логин</label>
+        <input class="form-control" name="login" required value="{{ agent.login|default('')|e }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Пароль</label>
+        <input class="form-control" name="password" required value="{{ agent.password|default('')|e }}">
+    </div>
+    <div class="col-12">
+        <label class="form-label">Права (JSON или текст)</label>
+        <textarea class="form-control" name="permissions" rows="4">{{ agent.permissions|default('')|e }}</textarea>
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary">Сохранить</button>
+        <a class="btn btn-secondary" href="/admin/agents">Отмена</a>
+    </div>
+</form>
+{% endblock %}
+

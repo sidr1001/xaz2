@@ -1,0 +1,91 @@
+{% extends 'base.twig' %}
+
+{% block title %}Заявка на тур{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">Заявка на тур</h1>
+
+<form id="booking-form" class="row g-3">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="tour_id" value="{{ tour_id }}">
+    <div class="col-md-4">
+        <label class="form-label">Имя заказчика</label>
+        <input class="form-control" name="customer_name" required>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Телефон</label>
+        <input class="form-control" name="customer_phone" required>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" name="customer_email" required>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Сумма к оплате</label>
+        <input class="form-control" type="number" step="0.01" name="total_amount" required>
+    </div>
+
+    <div class="col-12 mt-3">
+        <h5>Туристы</h5>
+        <div id="tourists-list"></div>
+        <button type="button" id="add-tourist" class="btn btn-outline-primary btn-sm mt-2">Добавить туриста</button>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Отправить заявку</button>
+        <a class="btn btn-secondary" href="/tour/{{ tour_id }}">Отмена</a>
+    </div>
+</form>
+
+<div id="alert" class="alert mt-3 d-none"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function(){
+  function tmpl(i){
+    return `<div class="card p-3 mb-2 tourist" data-i="${i}">
+      <div class="row g-2">
+        <div class="col-md-4"><input class="form-control" name="tourists[${i}][full_name]" placeholder="ФИО" required></div>
+        <div class="col-md-2"><input class="form-control" type="date" name="tourists[${i}][birth_date]" placeholder="Дата рождения"></div>
+        <div class="col-md-3"><input class="form-control" name="tourists[${i}][passport]" placeholder="Паспорт"></div>
+        <div class="col-md-2"><input class="form-control" name="tourists[${i}][phone]" placeholder="Телефон"></div>
+        <div class="col-md-3 mt-2"><input class="form-control" type="email" name="tourists[${i}][email]" placeholder="Email"></div>
+        <div class="col-md-2 mt-2"><button type="button" class="btn btn-outline-danger btn-sm js-remove">Удалить</button></div>
+      </div>
+    </div>`;
+  }
+  let idx = 0;
+  $('#add-tourist').on('click', function(){
+    $('#tourists-list').append(tmpl(idx++));
+  }).click();
+
+  $('#tourists-list').on('click', '.js-remove', function(){
+    $(this).closest('.tourist').remove();
+  });
+
+  $('#booking-form').on('submit', function(e){
+    e.preventDefault();
+    const form = $(this);
+    $.ajax({
+      url: '/booking',
+      method: 'POST',
+      data: form.serialize(),
+      success: function(resp){
+        if(resp.ok){
+          $('#alert').removeClass('d-none alert-danger').addClass('alert-success').text('Заявка отправлена! ID ' + resp.booking_id);
+          form.trigger('reset');
+          $('#tourists-list').empty();
+        } else {
+          $('#alert').removeClass('d-none alert-success').addClass('alert-danger').text(resp.error || 'Ошибка');
+        }
+      },
+      error: function(){
+        $('#alert').removeClass('d-none alert-success').addClass('alert-danger').text('Ошибка сервера');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
+

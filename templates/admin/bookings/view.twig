@@ -1,0 +1,68 @@
+{% extends 'admin/layout.twig' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Заявка #{{ booking.id }}</h1>
+  <div>
+    <form class="d-inline" method="post" action="/admin/bookings/{{ booking.id }}/status">
+      <select class="form-select d-inline w-auto" name="status">
+        <option value="pending" {{ booking.status == 'pending' ? 'selected' }} >pending</option>
+        <option value="confirmed" {{ booking.status == 'confirmed' ? 'selected' }} >confirmed</option>
+        <option value="cancelled" {{ booking.status == 'cancelled' ? 'selected' }} >cancelled</option>
+      </select>
+      <button class="btn btn-sm btn-primary">Сохранить</button>
+    </form>
+    <button id="gen-docs" class="btn btn-sm btn-outline-secondary">Сформировать документы</button>
+    <a href="/admin/bookings/{{ booking.id }}/payment/invoice" class="btn btn-sm btn-outline-primary">Счет (PDF)</a>
+    <a href="/admin/bookings/{{ booking.id }}/payment/online" class="btn btn-sm btn-success">Онлайн-оплата</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Клиент</h5>
+        <p>{{ booking.customer_name|e }}<br>{{ booking.customer_phone|e }}<br>{{ booking.customer_email|e }}</p>
+        <p><strong>Сумма:</strong> {{ booking.total_amount|e }}</p>
+        <p><strong>Агент:</strong> {{ booking.agent_login ? booking.agent_login : '—' }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Туристы</h5>
+        <ul class="list-group list-group-flush">
+          {% for t in tourists %}
+          <li class="list-group-item">{{ t.full_name|e }}, {{ t.birth_date|e }}, {{ t.passport|e }}, {{ t.phone|e }}, {{ t.email|e }}</li>
+          {% else %}
+          <li class="list-group-item text-muted">Нет туристов</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="docs" class="mt-3"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$('#gen-docs').on('click', function(){
+  $.post('/admin/bookings/{{ booking.id }}/documents', {}, function(resp){
+    if(resp.ok){
+      let html = '<h5>Документы</h5><ul>';
+      Object.entries(resp.files).forEach(([k,v]) => {
+        html += `<li><a href="${v}" target="_blank">${k}.pdf</a></li>`;
+      });
+      html += '</ul>';
+      $('#docs').html(html);
+    }
+  });
+});
+</script>
+{% endblock %}
+

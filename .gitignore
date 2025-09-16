@@ -1,0 +1,44 @@
+# Игнорировать папку vendor (устанавливается через composer)
+/vendor/
+
+# Игнорировать файлы окружения (с паролями и ключами!)
+.env
+.env.local
+.env.*.local
+
+# Игнорировать логи
+*.log
+logs/
+storage/logs/
+
+# Игнорировать кэш
+cache/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# Игнорировать системные файлы Windows
+Thumbs.db
+.DS_Store
+
+# Игнорировать временные файлы редакторов
+*~
+*.swp
+*.swo
+
+# Игнорировать папку node_modules (если используешь JS)
+/node_modules/
+
+# Игнорировать файлы дампов БД
+*.sql
+*.dump
+
+# Игнорировать папку с загрузками (если файлы пользователей)
+/public/uploads/
+
+# свои
+/tmp/
+xaz1.code-workspace
+composer.bat
+composer.phar
+composer.lock

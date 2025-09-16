@@ -1,0 +1,78 @@
+{% extends 'admin/layout.twig' %}
+
+{% set is_edit = tour is defined %}
+
+{% block content %}
+<h1 class="mb-3">{{ is_edit ? 'Редактировать тур' : 'Добавить тур' }}</h1>
+
+<form method="post" enctype="multipart/form-data" action="{{ is_edit ? '/admin/tours/' ~ tour.id ~ '/update' : '/admin/tours/store' }}" class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Название</label>
+        <input class="form-control" name="title" required value="{{ tour.title|default('')|e }}">
+    </div>
+    <div class="col-12">
+        <label class="form-label">Описание</label>
+        <textarea class="form-control" id="editor" name="description" rows="10">{{ tour.description|default('')|raw }}</textarea>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Страна</label>
+        <input class="form-control" name="country" value="{{ tour.country|default('')|e }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Регион</label>
+        <input class="form-control" name="region" value="{{ tour.region|default('')|e }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Город</label>
+        <input class="form-control" name="city" value="{{ tour.city|default('')|e }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Цена</label>
+        <input type="number" step="0.01" class="form-control" name="price" value="{{ tour.price|default('')|e }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Дата начала</label>
+        <input type="date" class="form-control" name="start_date" value="{{ tour.start_date|default('')|e }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Дата окончания</label>
+        <input type="date" class="form-control" name="end_date" value="{{ tour.end_date|default('')|e }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Тип тура</label>
+        <select class="form-select" name="tour_type">
+            <option value="bus" {{ tour.tour_type=='bus' ? 'selected' }}>Автобусный</option>
+            <option value="air" {{ tour.tour_type=='air' ? 'selected' }}>Авиа</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Длительность (дней)</label>
+        <input type="number" class="form-control" name="duration_days" value="{{ tour.duration_days|default('')|e }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Город выезда</label>
+        <input class="form-control" name="departure_city" value="{{ tour.departure_city|default('')|e }}">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Изображение</label>
+        <input type="file" class="form-control" name="image" accept="image/*">
+        {% if tour.image %}<img src="{{ tour.image|e }}" class="img-fluid mt-2" style="max-height:120px">{% endif %}
+    </div>
+    <div class="col-md-9">
+        <label class="form-label">Галерея изображений</label>
+        <input type="file" class="form-control" name="images[]" accept="image/*" multiple>
+        <div class="form-text">Можно загрузить несколько изображений. Они будут оптимизированы и созданы превью.</div>
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary">Сохранить</button>
+        <a class="btn btn-secondary" href="/admin/tours">Отмена</a>
+    </div>
+</form>
+{% block scripts %}
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({ selector:'#editor',apiKey:'u5owg1z5cc5c9yf5b2bfgx0y6l0vdfn82a2jkzmrp4py8229', menubar:false, plugins:'link lists image table code', toolbar:'undo redo | styles | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code' });
+</script>
+{% endblock %}
+{% endblock %}
+

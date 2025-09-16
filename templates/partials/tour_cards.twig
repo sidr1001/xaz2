@@ -1,0 +1,21 @@
+<div class="row g-4">
+  {% for tour in tours %}
+    <div class="col-md-4">
+      <div class="card h-100">
+        {% if tour.image %}<img src="{{ tour.image|e }}" class="card-img-top" alt="">{% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ tour.title|e }}</h5>
+          <p class="card-text text-muted">{{ tour.country|e }}, {{ tour.region|e }}, {{ tour.city|e }}</p>
+          <p class="card-text">{{ tour.description|striptags|slice(0,120) }}{% if tour.description and tour.description|length > 120 %}...{% endif %}</p>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+          <span class="fw-bold">{{ tour.price|e }} ₽</span>
+          <a class="btn btn-outline-primary btn-sm" href="/tour/{{ tour.id }}">Подробнее</a>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="col-12"><div class="alert alert-secondary">Нет туров</div></div>
+  {% endfor %}
+</div>
+

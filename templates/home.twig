@@ -1,0 +1,36 @@
+{% extends 'base.twig' %}
+
+{% block title %}Каталог туров{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Каталог туров</h1>
+
+<form class="row g-2 mb-4" method="get" id="filters">
+    <div class="col-sm-3"><input name="q" value="{{ filters.q|e }}" class="form-control" placeholder="Поиск..."></div>
+    <div class="col-sm-2"><input name="city" value="{{ filters.city|e }}" class="form-control" placeholder="Город"></div>
+    <div class="col-sm-2"><input name="region" value="{{ filters.region|e }}" class="form-control" placeholder="Регион"></div>
+    <div class="col-sm-2"><input name="country" value="{{ filters.country|e }}" class="form-control" placeholder="Страна"></div>
+    <div class="col-sm-1"><input name="min_price" value="{{ filters.min_price|e }}" class="form-control" placeholder="Мин"></div>
+    <div class="col-sm-1"><input name="max_price" value="{{ filters.max_price|e }}" class="form-control" placeholder="Макс"></div>
+    <div class="col-sm-2"><input type="date" name="start_date" value="{{ filters.start_date|e }}" class="form-control" placeholder="Дата с"></div>
+    <div class="col-sm-2"><input type="date" name="end_date" value="{{ filters.end_date|e }}" class="form-control" placeholder="Дата до"></div>
+    <div class="col-sm-2"><button class="btn btn-primary w-100" type="submit">Фильтр</button></div>
+    </form>
+
+<div id="tours-list">
+    {% include 'partials/tour_cards.twig' with {tours: tours} %}
+</div>
+<div class="text-center my-3">
+  {% if hasMore %}
+    <button id="apply-filters" class="btn btn-primary me-2">Применить</button>
+    <button id="load-more" class="btn btn-outline-secondary">Показать ещё</button>
+  {% else %}
+    <button id="apply-filters" class="btn btn-primary">Применить</button>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/assets/js/frontend.js"></script>
+{% endblock %}
+

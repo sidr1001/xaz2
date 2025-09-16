@@ -1,0 +1,29 @@
+{
+    "name": "demo/tours-cms",
+    "description": "Slim 4 + Twig + PDO Tours CMS with Admin Panel",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "slim/slim": "^4.12",
+        "slim/psr7": "^1.6",
+        "slim/twig-view": "^3.4.1",
+        "vlucas/phpdotenv": "^5.6",
+        "dompdf/dompdf": "^2.0",
+        "intervention/image": "^3.7",
+        "arekaev/tbank-payment": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/arekaev/tbank-payment.git"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "start": "php -S localhost:8088 -t public"
+    }
+}

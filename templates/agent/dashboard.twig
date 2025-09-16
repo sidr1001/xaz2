@@ -1,0 +1,22 @@
+{% extends 'agent/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Туры</h1>
+<div class="row g-3">
+  {% for tour in tours %}
+  <div class="col-md-4">
+    <div class="card h-100">
+      {% if tour.image %}<img src="{{ tour.image|e }}" class="card-img-top" alt="">{% endif %}
+      <div class="card-body">
+        <h5 class="card-title">{{ tour.title|e }}</h5>
+        <p class="card-text">{{ tour.price|e }} ₽</p>
+        <a href="/agent/tours/{{ tour.id }}/book" class="btn btn-primary btn-sm">Создать заявку</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12"><div class="alert alert-secondary">Нет туров</div></div>
+  {% endfor %}
+</div>
+{% endblock %}
+

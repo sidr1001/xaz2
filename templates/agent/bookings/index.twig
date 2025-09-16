@@ -1,0 +1,25 @@
+{% extends 'agent/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Мои заявки</h1>
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead><tr><th>ID</th><th>Тур</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
+    <tbody>
+      {% for b in bookings %}
+      <tr>
+        <td>{{ b.id }}</td>
+        <td>{{ b.tour_title|e }}</td>
+        <td>{{ b.customer_name|e }}</td>
+        <td>{{ b.total_amount|e }}</td>
+        <td>{{ b.status|e }}</td>
+        <td>{{ b.created_at|e }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="text-center text-muted">Нет заявок</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

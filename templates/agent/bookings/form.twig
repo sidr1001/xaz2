@@ -1,0 +1,36 @@
+{% extends 'agent/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Создать заявку</h1>
+<form method="post" action="/agent/bookings/store" class="row g-3">
+  <input type="hidden" name="tour_id" value="{{ tour_id }}" />
+  <div class="col-md-4"><input class="form-control" name="customer_name" placeholder="Имя" required></div>
+  <div class="col-md-4"><input class="form-control" name="customer_phone" placeholder="Телефон" required></div>
+  <div class="col-md-4"><input class="form-control" type="email" name="customer_email" placeholder="Email" required></div>
+  <div class="col-md-3"><input class="form-control" type="number" step="0.01" name="total_amount" placeholder="Сумма" required></div>
+  <div class="col-12"><h5>Туристы</h5></div>
+  <div class="col-12" id="tlist"></div>
+  <div class="col-12"><button type="button" id="addT" class="btn btn-outline-primary btn-sm">Добавить туриста</button></div>
+  <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function(){
+  function t(i){
+    return `<div class=\"card p-3 mb-2\">
+      <div class=\"row g-2\">
+        <div class=\"col-md-4\"><input class=\"form-control\" name=\"tourists[${i}][full_name]\" placeholder=\"ФИО\" required></div>
+        <div class=\"col-md-2\"><input class=\"form-control\" type=\"date\" name=\"tourists[${i}][birth_date]\"></div>
+        <div class=\"col-md-3\"><input class=\"form-control\" name=\"tourists[${i}][passport]\" placeholder=\"Паспорт\"></div>
+        <div class=\"col-md-2\"><input class=\"form-control\" name=\"tourists[${i}][phone]\" placeholder=\"Телефон\"></div>
+        <div class=\"col-md-3 mt-2\"><input class=\"form-control\" name=\"tourists[${i}][email]\" placeholder=\"Email\"></div>
+      </div>
+    </div>`
+  }
+  let i=0; $('#addT').on('click', function(){ $('#tlist').append(t(i++)) }); $('#addT').click();
+})
+</script>
+{% endblock %}
+

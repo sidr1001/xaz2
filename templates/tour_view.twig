@@ -1,0 +1,22 @@
+{% extends 'base.twig' %}
+
+{% block title %}{{ tour.title|e }}{% endblock %}
+
+{% block content %}
+<a href="/" class="btn btn-link">← Назад</a>
+<div class="row mt-3">
+    <div class="col-md-6">
+        {% if tour.image %}
+            <img src="{{ tour.image|e }}" class="img-fluid rounded" alt="">
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h1>{{ tour.title|e }}</h1>
+        <p class="text-muted">{{ tour.country|e }}, {{ tour.region|e }}, {{ tour.city|e }}</p>
+        <p>{{ tour.description|e }}</p>
+        <p><strong>Цена:</strong> {{ tour.price|e }} ₽</p>
+        <p><strong>Даты:</strong> {{ tour.start_date|e }} — {{ tour.end_date|e }}</p>
+    </div>
+</div>
+{% endblock %}
+
