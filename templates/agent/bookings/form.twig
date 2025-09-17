@@ -42,10 +42,11 @@ $(function(){
     return $list;
   }
 
-  $('#tlist').on('input', '[name^="tourists[\"]'][name$='[full_name]']', function(){
+  $('#tlist').on('input', 'input[name^="tourists["][name$="[full_name]"]', function(){
     const $inp = $(this);
     const q = $inp.val();
     const $list = ensureList($inp);
+	console.log('Поиск туриста...');
     if(q.length < 2){ $list.empty().hide(); return; }
     $.get('/agent/api/tourists/search', { q }, function(resp){
       if(!resp.ok || resp.items.length===0){ $list.empty().hide(); return; }
