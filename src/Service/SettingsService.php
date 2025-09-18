@@ -15,6 +15,10 @@ final class SettingsService
         foreach ($stmt->fetchAll() as $row) {
             $settings[$row['key']] = $row['value'];
         }
+        // Defaults
+        if (!isset($settings['bus_seat_selection_enabled'])) {
+            $settings['bus_seat_selection_enabled'] = '0';
+        }
         return $settings;
     }
 

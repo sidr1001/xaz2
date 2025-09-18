@@ -21,11 +21,14 @@ final class SettingsController
     public function save(Request $request, Response $response): Response
     {
         $data = (array)$request->getParsedBody();
-        foreach (['site_name','site_desc','email','phone','currency','payment_methods'] as $key) {
+        $keys = ['site_name','site_desc','email','phone','currency','payment_methods'];
+        foreach ($keys as $key) {
             if (array_key_exists($key, $data)) {
                 SettingsService::set($key, (string)$data[$key]);
             }
         }
+        // toggles
+        SettingsService::set('bus_seat_selection_enabled', isset($data['bus_seat_selection_enabled']) ? '1' : '0');
         return $response->withHeader('Location', '/admin/settings')->withStatus(302);
     }
 }

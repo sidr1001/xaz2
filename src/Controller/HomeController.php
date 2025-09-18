@@ -71,10 +71,16 @@ final class HomeController
             return $response->withHeader('Content-Type', 'application/json');
         }
 
+        // price extremes for slider
+        $priceMin = (float)$pdo->query('SELECT COALESCE(MIN(price),0) FROM tours')->fetchColumn();
+        $priceMax = (float)$pdo->query('SELECT COALESCE(MAX(price),0) FROM tours')->fetchColumn();
+
         return $view->render($response, 'home.twig', [
             'tours' => $tours,
             'filters' => $queryParams,
             'hasMore' => $hasMore,
+            'priceMin' => (int)$priceMin,
+            'priceMax' => (int)$priceMax,
         ]);
     }
 }

@@ -20,6 +20,20 @@ final class TourController
         if (!$tour) {
             return $view->render($response->withStatus(404), '404.twig');
         }
+        $qp = $request->getQueryParams();
+        if (($qp['ajax'] ?? null) === 'meta') {
+            // Dummy seats meta; extend with real availability later
+            $enabled = (\App\Service\SettingsService::getAll()['bus_seat_selection_enabled'] ?? '0') === '1';
+            $payload = [
+                'ok' => true,
+                'tour_type' => $tour['tour_type'] ?? null,
+                'seat_enabled' => $enabled,
+                'seats' => 40,
+                'taken' => [],
+            ];
+            $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
         return $view->render($response, 'tour_view.twig', ['tour' => $tour]);
     }
 }

@@ -11,6 +11,11 @@
   <div class="col-12"><h5>Туристы</h5></div>
   <div class="col-12" id="tlist"></div>
   <div class="col-12"><button type="button" id="addT" class="btn btn-outline-primary btn-sm">Добавить туриста</button></div>
+  <div id="bus-seats" class="col-12 d-none">
+    <h5>Выбор мест в автобусе</h5>
+    <div id="seat-grid" class="d-flex flex-wrap" style="max-width: 520px"></div>
+    <input type="hidden" name="bus_seats" id="bus_seats_input" />
+  </div>
   <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
 </form>
 {% endblock %}
@@ -76,6 +81,48 @@ $(function(){
     }
     $(this).parent().hide().empty();
   });
+
+  // Bus seat selection (simple 4x10 grid example)
+  function loadTour() {
+    const tourId = $('input[name="tour_id"]').val();
+    if(!tourId) return;
+    $.get('/tour/'+tourId, { ajax: 'meta' }, function(resp){
+      if(!resp || !resp.ok) return;
+      if(resp.tour_type === 'bus' && resp.seat_enabled === true){
+        $('#bus-seats').removeClass('d-none');
+        renderSeatGrid(resp.seats || 40, resp.taken || []);
+      } else {
+        $('#bus-seats').addClass('d-none');
+      }
+    });
+  }
+  function renderSeatGrid(total, taken){
+    const $grid = $('#seat-grid');
+    $grid.empty();
+    const selected = new Set();
+    for(let i=1;i<=total;i++){
+      const isTaken = taken.includes(i);
+      const $btn = $('<button type="button" class="btn m-1"></button>')
+        .text(i)
+        .toggleClass('btn-secondary', isTaken)
+        .toggleClass('btn-outline-primary', !isTaken)
+        .prop('disabled', isTaken)
+        .data('seat', i);
+      $grid.append($btn);
+    }
+    $grid.off('click').on('click', 'button', function(){
+      const s = $(this).data('seat');
+      if($(this).hasClass('btn-outline-primary')){
+        $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+        selected.add(s);
+      } else if($(this).hasClass('btn-primary')){
+        $(this).removeClass('btn-primary').addClass('btn-outline-primary');
+        selected.delete(s);
+      }
+      $('#bus_seats_input').val(Array.from(selected).join(','));
+    });
+  }
+  loadTour();
 })
 </script>
 {% endblock %}

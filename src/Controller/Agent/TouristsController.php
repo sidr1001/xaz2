@@ -39,5 +39,84 @@ final class TouristsController
         $response->getBody()->write(json_encode(['ok'=>true,'items'=>$items], JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type','application/json');
     }
+
+    public function edit(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT t.* FROM tourists t INNER JOIN bookings b ON b.id=t.booking_id WHERE t.id=:id AND b.agent_id=:a');
+        $stmt->execute([':id'=>$id, ':a'=>$agentId]);
+        $t = $stmt->fetch();
+        if(!$t){ $view = Twig::fromRequest($request); return $view->render($response->withStatus(404), '404.twig'); }
+        $files = self::listFiles($id);
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 'agent/tourists/form.twig', ['t'=>$t, 'files'=>$files]);
+    }
+
+    public function update(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        // access check
+        $chk = $pdo->prepare('SELECT COUNT(*) FROM tourists t INNER JOIN bookings b ON b.id=t.booking_id WHERE t.id=:id AND b.agent_id=:a');
+        $chk->execute([':id'=>$id, ':a'=>$agentId]);
+        if((int)$chk->fetchColumn() === 0){ return $response->withStatus(403); }
+        $d = (array)$request->getParsedBody();
+        $stmt = $pdo->prepare('UPDATE tourists SET full_name=:n, birth_date=:b, passport=:p, phone=:ph, email=:e WHERE id=:id');
+        $stmt->execute([':n'=>trim((string)($d['full_name']??'')), ':b'=>$d['birth_date']??null, ':p'=>trim((string)($d['passport']??'')), ':ph'=>trim((string)($d['phone']??'')), ':e'=>trim((string)($d['email']??'')), ':id'=>$id]);
+        return $response->withHeader('Location','/agent/tourists/'.$id.'/edit')->withStatus(302);
+    }
+
+    public function upload(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        $chk = $pdo->prepare('SELECT COUNT(*) FROM tourists t INNER JOIN bookings b ON b.id=t.booking_id WHERE t.id=:id AND b.agent_id=:a');
+        $chk->execute([':id'=>$id, ':a'=>$agentId]);
+        if((int)$chk->fetchColumn() === 0){ return $response->withStatus(403); }
+        $uploadedFiles = $request->getUploadedFiles();
+        $file = $uploadedFiles['file'] ?? null;
+        if (!$file) { return $response->withHeader('Location', '/agent/tourists/'.$id.'/edit?error=nofile')->withStatus(302); }
+        $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg','jpeg','png','pdf'], true)) {
+            return $response->withHeader('Location', '/agent/tourists/'.$id.'/edit?error=type')->withStatus(302);
+        }
+        $dir = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$id;
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        $name = bin2hex(random_bytes(8)).'.'.$ext;
+        $path = $dir.'/'.$name;
+        $file->moveTo($path);
+        return $response->withHeader('Location','/agent/tourists/'.$id.'/edit')->withStatus(302);
+    }
+
+    public function deleteFile(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        $chk = $pdo->prepare('SELECT COUNT(*) FROM tourists t INNER JOIN bookings b ON b.id=t.booking_id WHERE t.id=:id AND b.agent_id=:a');
+        $chk->execute([':id'=>$id, ':a'=>$agentId]);
+        if((int)$chk->fetchColumn() === 0){ return $response->withStatus(403); }
+        $d = (array)$request->getParsedBody();
+        $file = basename((string)($d['file'] ?? ''));
+        $path = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$id.'/'.$file;
+        if (is_file($path)) unlink($path);
+        return $response->withHeader('Location','/agent/tourists/'.$id.'/edit')->withStatus(302);
+    }
+
+    private static function listFiles(int $touristId): array
+    {
+        $dir = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$touristId;
+        if (!is_dir($dir)) return [];
+        $out = [];
+        foreach (scandir($dir) as $f) {
+            if ($f === '.' || $f === '..') continue;
+            $out[] = [ 'name'=>$f, 'url'=>'/uploads/tourists/'.$touristId.'/'.$f ];
+        }
+        return $out;
+    }
 }
 

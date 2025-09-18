@@ -62,6 +62,10 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
 
     // Tourists list
     $group->get('/tourists', [AdminTouristsController::class, 'index']);
+    $group->get('/tourists/{id}/edit', [AdminTouristsController::class, 'edit']);
+    $group->post('/tourists/{id}/update', [AdminTouristsController::class, 'update']);
+    $group->post('/tourists/{id}/upload', [AdminTouristsController::class, 'upload']);
+    $group->post('/tourists/{id}/file/delete', [AdminTouristsController::class, 'deleteFile']);
     // Bookings
     $group->get('/bookings', [AdminBookingsController::class, 'index']);
     $group->get('/bookings/{id}', [AdminBookingsController::class, 'view']);
@@ -89,6 +93,10 @@ $app->group('/agent', function (RouteCollectorProxy $group) {
     $group->get('/bookings/{id}', [AgentBookingsController::class, 'view']);
     $group->post('/bookings/{id}/documents', [AgentBookingsController::class, 'generateDocuments']);
     $group->get('/tourists', [\App\Controller\Agent\TouristsController::class, 'index']);
+    $group->get('/tourists/{id}/edit', [\App\Controller\Agent\TouristsController::class, 'edit']);
+    $group->post('/tourists/{id}/update', [\App\Controller\Agent\TouristsController::class, 'update']);
+    $group->post('/tourists/{id}/upload', [\App\Controller\Agent\TouristsController::class, 'upload']);
+    $group->post('/tourists/{id}/file/delete', [\App\Controller\Agent\TouristsController::class, 'deleteFile']);
     $group->get('/tours/{tour_id}/book', [AgentBookingsController::class, 'create']);
     $group->post('/bookings/store', [AgentBookingsController::class, 'store']);
     $group->get('/tours/{tour_id}/pricing', [\App\Controller\Agent\PricingController::class, 'form']);
