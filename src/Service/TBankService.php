@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Arekaev\TBank\Client as TBankClient;
+use Arekaev\TBank\TBankClient;
 
 final class TBankService
 {
@@ -11,35 +11,35 @@ final class TBankService
 
     public function __construct()
     {
-        $this->client = new TBankClient([
-            'terminal_key' => $_ENV['TBANK_TERMINAL_KEY'] ?? '',
-            'password' => $_ENV['TBANK_TERMINAL_PASSWORD'] ?? '',
-        ]);
+        $this->client = new TBankClient(
+            (string)($_ENV['TBANK_TERMINAL_KEY'] ?? ''),
+            (string)($_ENV['TBANK_TERMINAL_PASSWORD'] ?? '')
+        );
     }
 
     public function initPayment(int $paymentId, int $bookingId, float $amount, string $description): array
     {
-        $callback = $_ENV['TBANK_CALLBACK_URL'] ?? '';
-        $resp = $this->client->init([
-            'OrderId' => (string)$paymentId,
-            'Amount' => (int)round($amount * 100),
-            'Description' => $description,
-            'SuccessURL' => $callback,
-            'FailURL' => $callback,
-            'DATA' => [
-                'booking_id' => $bookingId,
-            ],
-        ]);
+        $callback = (string)($_ENV['TBANK_CALLBACK_URL'] ?? '');
+        $resp = $this->client->init(
+            (string)$paymentId,
+            (int)round($amount * 100),
+            $description,
+            $callback,
+            $callback,
+            ['booking_id' => $bookingId]
+        );
         return $resp;
     }
 
     public function parseCallback(array $payload): array
     {
-        // T-Bank callback contains OrderId and Status
+        // Map to PaymentService: orderId is our payment_id inside createOnline
+        $status = (string)($payload['Status'] ?? '');
+        $success = in_array($status, ['CONFIRMED','AUTHORIZED','COMPLETED'], true);
         return [
             'orderId' => (int)($payload['OrderId'] ?? 0),
-            'status' => (string)($payload['Status'] ?? ''),
-            'success' => ($payload['Status'] ?? '') === 'CONFIRMED',
+            'status' => $status,
+            'success' => $success,
         ];
     }
 }

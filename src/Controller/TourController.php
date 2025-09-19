@@ -22,14 +22,28 @@ final class TourController
         }
         $qp = $request->getQueryParams();
         if (($qp['ajax'] ?? null) === 'meta') {
-            // Dummy seats meta; extend with real availability later
             $enabled = (\App\Service\SettingsService::getAll()['bus_seat_selection_enabled'] ?? '0') === '1';
+            $taken = [];
+            if ($enabled && ($tour['tour_type'] ?? null) === 'bus') {
+                try {
+                    $stmt2 = $pdo->prepare('SELECT bus_seats FROM bookings WHERE tour_id=:tid AND COALESCE(bus_seats, "") <> ""');
+                    $stmt2->execute([':tid' => (int)$tour['id']]);
+                    foreach ($stmt2->fetchAll() as $row) {
+                        foreach (explode(',', (string)$row['bus_seats']) as $s) {
+                            $s = (int)trim($s);
+                            if ($s > 0) { $taken[$s] = true; }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Column may not exist; ignore
+                }
+            }
             $payload = [
                 'ok' => true,
                 'tour_type' => $tour['tour_type'] ?? null,
                 'seat_enabled' => $enabled,
                 'seats' => 40,
-                'taken' => [],
+                'taken' => array_keys($taken),
             ];
             $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
             return $response->withHeader('Content-Type', 'application/json');

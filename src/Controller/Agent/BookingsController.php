@@ -94,6 +94,16 @@ final class BookingsController
             ]);
             $bookingId = (int)$pdo->lastInsertId();
 
+            // Save bus seats if provided (optional column bookings.bus_seats)
+            $busSeats = trim((string)($data['bus_seats'] ?? ''));
+            if ($busSeats !== '') {
+                try {
+                    $pdo->prepare('UPDATE bookings SET bus_seats=:s WHERE id=:id')->execute([':s' => $busSeats, ':id' => $bookingId]);
+                } catch (\Throwable $e) {
+                    // Ignore if column doesn't exist
+                }
+            }
+
             $tourists = $data['tourists'] ?? [];
             $stmtT = $pdo->prepare('INSERT INTO tourists(booking_id, full_name, birth_date, passport, phone, email) VALUES(:b,:n,:d,:p,:ph,:e)');
             foreach ($tourists as $t) {
