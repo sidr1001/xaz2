@@ -9,15 +9,7 @@
 </head>
 <body>
 <div class="d-flex">
-  <div class="sidebar bg-dark text-white p-3 d-none d-md-block" style="min-width:240px; min-height:100vh;">
-    <h4 class="mb-4">Агент</h4>
-    <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item"><a class="nav-link text-white" href="/agent">Туры</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="/agent/bookings">Заявки</a></li>
-      <li class="nav-item"><a class="nav-link text-white" href="/agent/tourists">Туристы</a></li>
-      <li class="nav-item mt-3"><a class="nav-link text-danger" href="/agent/logout">Выход</a></li>
-    </ul>
-  </div>
+  <!-- Стационарная колонка убрана: используем off-canvas всегда -->
   <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="agentSidebar" aria-labelledby="agentSidebarLabel">
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="agentSidebarLabel">Меню</h5>
@@ -33,7 +25,7 @@
     </div>
   </div>
   <div class="content flex-fill p-4">
-    <button class="btn btn-outline-secondary d-md-none mb-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#agentSidebar" aria-controls="agentSidebar">
+    <button class="btn btn-outline-secondary mb-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#agentSidebar" aria-controls="agentSidebar">
       ☰ Меню
     </button>
     {% block content %}{% endblock %}

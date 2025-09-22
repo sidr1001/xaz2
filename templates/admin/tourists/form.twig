@@ -31,7 +31,7 @@
         <img src="{{ f.url|e }}" class="img-fluid" style="max-height:160px; object-fit:contain;">
       {% endif %}
       <div class="d-flex justify-content-between align-items-center mt-2">
-        <a class="small" href="{{ f.url|e }}" target="_blank">Открыть</a>
+        <a class="small" href="{{ f.url|e }}" target="_blank" download>Скачать</a>
         <form method="post" action="/admin/tourists/{{ t.id }}/file/delete">
           <input type="hidden" name="file" value="{{ f.name|e }}">
           <button class="btn btn-sm btn-outline-danger">Удалить</button>

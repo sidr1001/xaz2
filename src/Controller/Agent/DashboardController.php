@@ -19,14 +19,14 @@ final class DashboardController
         $q = $request->getQueryParams();
         $conditions = [];
         $params = [];
-        if (!empty($q['q'])) { $conditions[] = '(title LIKE :q OR city LIKE :q OR country LIKE :q)'; $params[':q'] = '%'.$q['q'].'%'; }
-        if (!empty($q['country'])) { $conditions[] = 'country = :country'; $params[':country'] = $q['country']; }
-        if (!empty($q['region'])) { $conditions[] = 'region = :region'; $params[':region'] = $q['region']; }
-        if (!empty($q['city'])) { $conditions[] = 'city = :city'; $params[':city'] = $q['city']; }
-        if (!empty($q['start_date'])) { $conditions[] = 'start_date >= :start_date'; $params[':start_date'] = $q['start_date']; }
-        if (!empty($q['end_date'])) { $conditions[] = 'end_date <= :end_date'; $params[':end_date'] = $q['end_date']; }
-        if (!empty($q['min_price'])) { $conditions[] = 'price >= :min_price'; $params[':min_price'] = (float)$q['min_price']; }
-        if (!empty($q['max_price'])) { $conditions[] = 'price <= :max_price'; $params[':max_price'] = (float)$q['max_price']; }
+        if (isset($q['q']) && $q['q'] !== '') { $conditions[] = '(title LIKE :q OR city LIKE :q OR country LIKE :q)'; $params[':q'] = '%'.$q['q'].'%'; }
+        if (isset($q['country']) && $q['country'] !== '') { $conditions[] = 'country = :country'; $params[':country'] = $q['country']; }
+        if (isset($q['region']) && $q['region'] !== '') { $conditions[] = 'region = :region'; $params[':region'] = $q['region']; }
+        if (isset($q['city']) && $q['city'] !== '') { $conditions[] = 'city = :city'; $params[':city'] = $q['city']; }
+        if (isset($q['start_date']) && $q['start_date'] !== '') { $conditions[] = 'start_date >= :start_date'; $params[':start_date'] = $q['start_date']; }
+        if (isset($q['end_date']) && $q['end_date'] !== '') { $conditions[] = 'end_date <= :end_date'; $params[':end_date'] = $q['end_date']; }
+        if (isset($q['min_price']) && $q['min_price'] !== '') { $conditions[] = 'price >= :min_price'; $params[':min_price'] = (float)$q['min_price']; }
+        if (isset($q['max_price']) && $q['max_price'] !== '') { $conditions[] = 'price <= :max_price'; $params[':max_price'] = (float)$q['max_price']; }
         $where = $conditions ? ('WHERE '.implode(' AND ', $conditions)) : '';
 
         // Paging and view

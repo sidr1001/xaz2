@@ -4,10 +4,11 @@
 <h1 class="mb-3 d-flex align-items-center justify-content-between">
   <span>Туры</span>
   <div class="d-flex align-items-center gap-2">
-    <select id="viewMode" class="form-select form-select-sm" style="width:auto;">
-      <option value="grid">Сетка</option>
-      <option value="list" {{ filters.view == 'list' ? 'selected' }}>Список</option>
-    </select>
+    <div class="btn-group" role="group" aria-label="View">
+      {% set isList = filters.view == 'list' %}
+      <a class="btn btn-sm {{ isList ? 'btn-outline-secondary' : 'btn-secondary' }}" href="?{{ filters|merge({'view':'grid'})|url_encode }}" title="Сетка"><i class="bi bi-grid"></i></a>
+      <a class="btn btn-sm {{ isList ? 'btn-secondary' : 'btn-outline-secondary' }}" href="?{{ filters|merge({'view':'list'})|url_encode }}" title="Список"><i class="bi bi-list"></i></a>
+    </div>
     <select id="perPage" class="form-select form-select-sm" style="width:auto;">
       {% for n in [8,12,16,20,24,28] %}
       <option value="{{ n }}" {{ perPage==n ? 'selected' }}>{{ n }}/стр</option>
@@ -40,7 +41,10 @@
   <div class="col-sm-1"><input type="date" name="end_date" value="{{ filters.end_date|e }}" class="form-control" placeholder="до"></div>
   <div class="col-sm-1"><input type="number" name="min_price" id="min_price" value="{{ filters.min_price|default(priceMin)|e }}" min="{{ priceMin }}" class="form-control" placeholder="Мин"></div>
   <div class="col-sm-1"><input type="number" name="max_price" id="max_price" value="{{ filters.max_price|default(priceMax)|e }}" max="{{ priceMax }}" class="form-control" placeholder="Макс"></div>
-  <div class="col-sm-2"><button class="btn btn-primary w-100">Применить</button></div>
+  <div class="col-sm-2 d-flex gap-2">
+    <button class="btn btn-primary w-100">Применить</button>
+    <a href="/agent" class="btn btn-outline-secondary">Сброс</a>
+  </div>
 </form>
 
 <div id="agent-tours" class="row g-3" data-view="{{ filters.view|default('grid') }}">
@@ -95,8 +99,30 @@ $(function(){
   const view = $('#agent-tours').data('view');
   if(view==='list'){
     $('.tour-card').removeClass('col-lg-3 col-md-6').addClass('col-12');
-    $('.tour-card .card-img-top').css({height:'220px', objectFit:'cover'});
+    // image left, content right
+    $('.tour-card .card').addClass('flex-row');
+    $('.tour-card .card-img-top').addClass('w-25').css({height:'100%', objectFit:'cover'}).removeClass('card-img-top');
   }
+});
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.css">
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.js"></script>
+<script>
+$(function(){
+  const slider = document.createElement('div');
+  slider.id = 'priceSlider';
+  const wrap = $('<div class="col-12"></div>');
+  wrap.append(slider);
+  $('#agent-filters').append(wrap);
+  const min = {{ priceMin }};
+  const max = {{ priceMax }};
+  const startMin = parseInt($('#min_price').val()||min,10);
+  const startMax = parseInt($('#max_price').val()||max,10);
+  noUiSlider.create(slider, { start: [startMin, startMax], connect: true, range: { min: min, max: max }, step: 1 });
+  slider.noUiSlider.on('update', function(values){
+    $('#min_price').val(Math.round(values[0]));
+    $('#max_price').val(Math.round(values[1]));
+  });
 });
 </script>
 {% endblock %}
