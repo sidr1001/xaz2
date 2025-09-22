@@ -1,15 +1,6 @@
 // Agent panel JS placeholder
 $(function(){
-  // Persist off-canvas open state
-  const key = 'agentSidebarOpen';
-  const $canvas = $('#agentSidebar');
-  const last = localStorage.getItem(key);
-  if(last === '1'){
-    const off = bootstrap.Offcanvas.getOrCreateInstance($canvas[0]);
-    off.show();
-  }
-  $canvas.on('shown.bs.offcanvas', function(){ localStorage.setItem(key, '1'); });
-  $canvas.on('hidden.bs.offcanvas', function(){ localStorage.setItem(key, '0'); });
+  // placeholder
   // Badge for active filters on agent dashboard
   const $af = $('#agent-filters');
   const $btn = $('button[data-bs-target="#agentSidebar"]');
