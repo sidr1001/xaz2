@@ -18,6 +18,10 @@
         <p>{{ booking.customer_name|e }}<br>{{ booking.customer_phone|e }}<br>{{ booking.customer_email|e }}</p>
         <p><strong>Сумма:</strong> {{ booking.total_amount|e }}</p>
         <p><strong>Статус:</strong> {{ booking.status|e }}</p>
+        <p><strong>Тур:</strong> {{ booking.tour_title|e }}</p>
+        {% if booking.bus_seats %}
+        <p><strong>Места в автобусе:</strong> {{ booking.bus_seats|e }}</p>
+        {% endif %}
       </div>
     </div>
   </div>

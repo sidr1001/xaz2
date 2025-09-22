@@ -27,7 +27,7 @@ final class BookingsController
         $agentId = (int)($_SESSION['agent_id'] ?? 0);
         $id = (int)$args['id'];
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM bookings WHERE id=:id AND agent_id=:a');
+        $stmt = $pdo->prepare('SELECT b.*, t.title AS tour_title FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id WHERE b.id=:id AND b.agent_id=:a');
         $stmt->execute([':id' => $id, ':a' => $agentId]);
         $booking = $stmt->fetch();
         if (!$booking) {

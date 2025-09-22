@@ -21,7 +21,7 @@ final class SettingsController
     public function save(Request $request, Response $response): Response
     {
         $data = (array)$request->getParsedBody();
-        $keys = ['site_name','site_desc','email','phone','currency','payment_methods'];
+        $keys = ['site_name','site_desc','email','phone','currency','payment_methods','card_image_width','card_image_height'];
         foreach ($keys as $key) {
             if (array_key_exists($key, $data)) {
                 SettingsService::set($key, (string)$data[$key]);

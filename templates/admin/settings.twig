@@ -33,6 +33,14 @@
       <label class="form-check-label" for="bus_seat_selection_enabled">Включить выбор мест в автобусе</label>
     </div>
   </div>
+  <div class="col-md-3">
+    <label class="form-label">Ширина изображения карточки (px)</label>
+    <input class="form-control" type="number" name="card_image_width" value="{{ settings.card_image_width|default('480')|e }}">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Высота изображения карточки (px)</label>
+    <input class="form-control" type="number" name="card_image_height" value="{{ settings.card_image_height|default('320')|e }}">
+  </div>
   <div class="col-12">
     <button class="btn btn-primary">Сохранить</button>
   </div>
