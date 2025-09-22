@@ -51,7 +51,13 @@
   {% for tour in tours %}
   <div class="col-12 col-md-6 col-lg-3 tour-card">
     <div class="card h-100">
-      {% if tour.image %}<img src="{{ tour.image|e }}" class="card-img-top" alt="">{% endif %}
+      {% if tour.image %}
+      <div class="thumb-wrap">
+        <div class="ratio" style="--bs-aspect-ratio: {{ (settings.card_image_height|default(320) / settings.card_image_width|default(480) * 100) | number_format(6, '.', '') }}%">
+          <img src="{{ tour.image|e }}" class="w-100 h-100 agent-card-img" style="object-fit: cover;" alt="">
+        </div>
+      </div>
+      {% endif %}
       <div class="card-body">
         <h5 class="card-title">{{ tour.title|e }}</h5>
         <div class="small text-muted mb-1">{{ tour.country|e }} {{ tour.region ? '• ' ~ tour.region : '' }} {{ tour.city ? '• ' ~ tour.city : '' }}</div>
@@ -101,7 +107,10 @@ $(function(){
     $('.tour-card').removeClass('col-lg-3 col-md-6').addClass('col-12');
     // image left, content right
     $('.tour-card .card').addClass('flex-row');
-    $('.tour-card .card-img-top').addClass('w-25').css({height:'100%', objectFit:'cover'}).removeClass('card-img-top');
+    const imgW = {{ settings.card_image_width|default(480) }};
+    $('.tour-card .thumb-wrap').addClass('flex-shrink-0 me-3').css({width: imgW + 'px'});
+    // ensure body flex-fill
+    $('.tour-card .card-body').addClass('flex-fill');
   }
 });
 </script>
