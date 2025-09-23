@@ -72,7 +72,8 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
     // Bookings
     $group->get('/bookings', [AdminBookingsController::class, 'index']);
     $group->get('/bookings/{id}', [AdminBookingsController::class, 'view']);
-    $group->post('/bookings/{id}/status', [AdminBookingsController::class, 'status']);
+    $group->post('/bookings/{id}/payment-status', [AdminBookingsController::class, 'paymentStatus']);
+    $group->post('/bookings/{id}/order-status', [AdminBookingsController::class, 'orderStatus']);
     $group->post('/bookings/{id}/documents', [AdminBookingsController::class, 'generateDocuments']);
 
     // Payments
@@ -110,6 +111,8 @@ $app->group('/agent', function (RouteCollectorProxy $group) {
     $group->get('/profile', [AgentProfileController::class, 'form']);
     $group->post('/profile', [AgentProfileController::class, 'save']);
     $group->get('/profile/contract', [AgentProfileController::class, 'contract']);
+    $group->post('/profile/upload/signature', [AgentProfileController::class, 'uploadSignature']);
+    $group->post('/profile/upload/stamp', [AgentProfileController::class, 'uploadStamp']);
 })->add(new AgentAuthMiddleware());
 
 // 404 handler

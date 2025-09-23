@@ -60,6 +60,34 @@ final class ProfileController
         return $response->withHeader('Location', str_replace(dirname(__DIR__,3).'/public','',$out))->withStatus(302);
     }
 
+    public function uploadSignature(Request $request, Response $response): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $files = $request->getUploadedFiles();
+        $file = $files['signature'] ?? null;
+        if(!$file || $file->getError()!==UPLOAD_ERR_OK){ return $response->withHeader('Location','/agent/profile?error=sig')->withStatus(302);} 
+        $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
+        if(!in_array($ext, ['png','jpg','jpeg'], true)){ return $response->withHeader('Location','/agent/profile?error=sigtype')->withStatus(302);} 
+        $dir = dirname(__DIR__,3)."/public/uploads/agents/$agentId";
+        if(!is_dir($dir)) mkdir($dir, 0777, true);
+        $file->moveTo($dir.'/signature.png');
+        return $response->withHeader('Location','/agent/profile')->withStatus(302);
+    }
+
+    public function uploadStamp(Request $request, Response $response): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $files = $request->getUploadedFiles();
+        $file = $files['stamp'] ?? null;
+        if(!$file || $file->getError()!==UPLOAD_ERR_OK){ return $response->withHeader('Location','/agent/profile?error=stamp')->withStatus(302);} 
+        $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
+        if(!in_array($ext, ['png','jpg','jpeg'], true)){ return $response->withHeader('Location','/agent/profile?error=stamptype')->withStatus(302);} 
+        $dir = dirname(__DIR__,3)."/public/uploads/agents/$agentId";
+        if(!is_dir($dir)) mkdir($dir, 0777, true);
+        $file->moveTo($dir.'/stamp.png');
+        return $response->withHeader('Location','/agent/profile')->withStatus(302);
+    }
+
     private function getProfile(\PDO $pdo, int $agentId): array
     {
         $stmt = $pdo->prepare('SELECT * FROM agent_profiles WHERE agent_id=:id');
