@@ -15,13 +15,17 @@ final class AgentsController
         $pdo = Database::getConnection();
         $agents = $pdo->query('SELECT * FROM agents ORDER BY created_at DESC')->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/agents/index.twig', ['agents' => $agents]);
+        return $view->render($response, 'admin/agents/index.twig', ['agents' => $agents, 'breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Агенты']
+        ]]);
     }
 
     public function create(Request $request, Response $response): Response
     {
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/agents/form.twig');
+        return $view->render($response, 'admin/agents/form.twig', ['breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Агенты','url'=>'/admin/agents'],['title'=>'Добавить']
+        ]]);
     }
 
     public function store(Request $request, Response $response): Response
@@ -55,7 +59,9 @@ final class AgentsController
         $contractPath = '/uploads/agents/'.(int)$args['id'].'/contract.pdf';
         $hasContract = is_file(dirname(__DIR__,3).'/public'.$contractPath);
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/agents/form.twig', ['agent' => $agent, 'profile'=>$profile, 'contract_uploaded'=>$hasContract, 'contract_url'=>$hasContract ? $contractPath : null]);
+        return $view->render($response, 'admin/agents/form.twig', ['agent' => $agent, 'profile'=>$profile, 'contract_uploaded'=>$hasContract, 'contract_url'=>$hasContract ? $contractPath : null, 'breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Агенты','url'=>'/admin/agents'],['title'=>'Редактировать']
+        ]]);
     }
 
     public function update(Request $request, Response $response, array $args): Response

@@ -15,13 +15,17 @@ final class ToursController
         $pdo = Database::getConnection();
         $tours = $pdo->query('SELECT * FROM tours ORDER BY created_at DESC')->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tours/index.twig', ['tours' => $tours]);
+        return $view->render($response, 'admin/tours/index.twig', ['tours' => $tours, 'breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Туры']
+        ]]);
     }
 
     public function create(Request $request, Response $response): Response
     {
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tours/form.twig');
+        return $view->render($response, 'admin/tours/form.twig', ['breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Туры','url'=>'/admin/tours'],['title'=>'Добавить']
+        ]]);
     }
 
     public function store(Request $request, Response $response): Response
@@ -87,7 +91,9 @@ final class ToursController
             return $view->render($response->withStatus(404), '404.twig');
         }
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tours/form.twig', ['tour' => $tour]);
+        return $view->render($response, 'admin/tours/form.twig', ['tour' => $tour, 'breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Туры','url'=>'/admin/tours'],['title'=>'Редактировать']
+        ]]);
     }
 
     public function update(Request $request, Response $response, array $args): Response

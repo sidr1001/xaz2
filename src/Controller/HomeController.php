@@ -81,6 +81,9 @@ final class HomeController
             'hasMore' => $hasMore,
             'priceMin' => (int)$priceMin,
             'priceMax' => (int)$priceMax,
+            'breadcrumbs' => [
+                ['title' => 'Главная']
+            ],
         ]);
     }
 }

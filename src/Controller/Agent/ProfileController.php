@@ -31,7 +31,11 @@ final class ProfileController
         $in = (array)$request->getParsedBody();
         $pairs = [];
         foreach (self::FIELDS as $f) {
-            $pairs[$f] = trim((string)($in[$f] ?? ''));
+            $val = trim((string)($in[$f] ?? ''));
+            if (in_array($f, ['contract_date_from','contract_date_to'], true)) {
+                $val = $val !== '' ? $val : null;
+            }
+            $pairs[$f] = $val;
         }
         // Upsert into agent_profiles table
         $columns = implode(',', array_map(fn($k)=>"`$k`", array_keys($pairs)));
@@ -40,7 +44,7 @@ final class ProfileController
         $sql = "INSERT INTO agent_profiles(agent_id,$columns) VALUES(:agent_id,$placeholders) ON DUPLICATE KEY UPDATE $updates";
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':agent_id', $agentId, \PDO::PARAM_INT);
-        foreach ($pairs as $k=>$v) { $stmt->bindValue(":$k", $v); }
+        foreach ($pairs as $k=>$v) { $stmt->bindValue(":$k", $v, $v===null?\PDO::PARAM_NULL:\PDO::PARAM_STR); }
         $stmt->execute();
         return $response->withHeader('Location','/agent/profile')->withStatus(302);
     }

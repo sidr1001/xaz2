@@ -41,6 +41,16 @@
     <label class="form-label">Высота изображения карточки (px)</label>
     <input class="form-control" type="number" name="card_image_height" value="{{ settings.card_image_height|default('320')|e }}">
   </div>
+  <div class="col-12"><hr></div>
+  <div class="col-md-6">
+    <label class="form-label">Подпись туроператора (PNG/JPG)</label>
+    <input class="form-control" type="file" name="operator_signature" accept=".png,.jpg,.jpeg" disabled>
+    <div class="form-text">Примечание: для загрузки понадобится обновить форму на multipart. Могу включить по вашему подтверждению.</div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Печать туроператора (PNG/JPG)</label>
+    <input class="form-control" type="file" name="operator_stamp" accept=".png,.jpg,.jpeg" disabled>
+  </div>
   <div class="col-12">
     <button class="btn btn-primary">Сохранить</button>
   </div>
