@@ -15,11 +15,31 @@ final class BookingsController
     {
         $agentId = (int)($_SESSION['agent_id'] ?? 0);
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('SELECT b.*, t.title AS tour_title FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id WHERE b.agent_id=:a ORDER BY b.created_at DESC');
-        $stmt->execute([':a' => $agentId]);
+        $q = $request->getQueryParams();
+        $cond = ['b.agent_id = :a'];
+        $p = [':a' => $agentId];
+        if (isset($q['id']) && $q['id'] !== '') { $cond[] = 'b.id = :id'; $p[':id'] = (int)$q['id']; }
+        if (isset($q['created_from']) && $q['created_from'] !== '') { $cond[] = 'b.created_at >= :cf'; $p[':cf'] = $q['created_from']; }
+        if (isset($q['created_to']) && $q['created_to'] !== '') { $cond[] = 'b.created_at <= :ct'; $p[':ct'] = $q['created_to']; }
+        if (isset($q['trip_from']) && $q['trip_from'] !== '') { $cond[] = 't.start_date >= :tf'; $p[':tf'] = $q['trip_from']; }
+        if (isset($q['trip_to']) && $q['trip_to'] !== '') { $cond[] = 't.end_date <= :tt'; $p[':tt'] = $q['trip_to']; }
+        if (isset($q['order_status']) && $q['order_status'] !== '') { $cond[] = 'b.order_status = :os'; $p[':os'] = $q['order_status']; }
+        if (isset($q['payment_status']) && $q['payment_status'] !== '') { $cond[] = 'b.payment_status = :ps'; $p[':ps'] = $q['payment_status']; }
+        $where = 'WHERE ' . implode(' AND ', $cond);
+        $sql = "SELECT b.*, t.title AS tour_title, t.start_date, t.end_date FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id $where ORDER BY b.created_at DESC";
+        $stmt = $pdo->prepare($sql);
+        foreach ($p as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->execute();
         $list = $stmt->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'agent/bookings/index.twig', ['bookings' => $list]);
+        return $view->render($response, 'agent/bookings/index.twig', [
+            'bookings' => $list,
+            'filters' => $q,
+            'breadcrumbs' => [
+                ['title' => 'Кабинет агента', 'url' => '/agent'],
+                ['title' => 'Заявки'],
+            ],
+        ]);
     }
 
     public function view(Request $request, Response $response, array $args): Response
@@ -42,6 +62,11 @@ final class BookingsController
         return $view->render($response, 'agent/bookings/view.twig', [
             'booking' => $booking,
             'tourists' => $touristsList,
+            'breadcrumbs' => [
+                ['title' => 'Кабинет агента', 'url' => '/agent'],
+                ['title' => 'Заявки', 'url' => '/agent/bookings'],
+                ['title' => 'Заявка #'.$id],
+            ],
         ]);
     }
 

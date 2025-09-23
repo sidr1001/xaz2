@@ -30,7 +30,14 @@ final class BookingsController
         $stmt->execute();
         $list = $stmt->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/bookings/index.twig', ['bookings' => $list, 'filters'=>$q]);
+        return $view->render($response, 'admin/bookings/index.twig', [
+            'bookings' => $list,
+            'filters'=>$q,
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Заявки'],
+            ],
+        ]);
     }
 
     public function view(Request $request, Response $response, array $args): Response
@@ -52,6 +59,11 @@ final class BookingsController
         return $view->render($response, 'admin/bookings/view.twig', [
             'booking' => $booking,
             'tourists' => $touristsList,
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Заявки', 'url' => '/admin/bookings'],
+                ['title' => 'Заявка #'.$id],
+            ],
         ]);
     }
 
