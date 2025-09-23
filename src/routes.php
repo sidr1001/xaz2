@@ -18,6 +18,7 @@ use App\Controller\Admin\SettingsController as AdminSettingsController;
 use App\Controller\Agent\AuthController as AgentAuthController;
 use App\Controller\Agent\DashboardController as AgentDashboardController;
 use App\Controller\Agent\BookingsController as AgentBookingsController;
+use App\Controller\Agent\ProfileController as AgentProfileController;
 use App\Controller\Agent\PaymentsController as AgentPaymentsController;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
@@ -59,6 +60,8 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
     $group->get('/agents/{id}/edit', [AgentsController::class, 'edit']);
     $group->post('/agents/{id}/update', [AgentsController::class, 'update']);
     $group->post('/agents/{id}/delete', [AgentsController::class, 'delete']);
+    $group->post('/agents/{id}/contract/upload', [AgentsController::class, 'contractUpload']);
+    $group->post('/agents/{id}/contract/mode', [AgentsController::class, 'contractMode']);
 
     // Tourists list
     $group->get('/tourists', [AdminTouristsController::class, 'index']);
@@ -104,6 +107,9 @@ $app->group('/agent', function (RouteCollectorProxy $group) {
     $group->get('/bookings/{booking_id}/payment/invoice', [AgentPaymentsController::class, 'invoice']);
     $group->get('/bookings/{booking_id}/payment/online', [AgentPaymentsController::class, 'online']);
     $group->get('/api/tourists/search', [\App\Controller\Agent\TouristsController::class, 'search']);
+    $group->get('/profile', [AgentProfileController::class, 'form']);
+    $group->post('/profile', [AgentProfileController::class, 'save']);
+    $group->get('/profile/contract', [AgentProfileController::class, 'contract']);
 })->add(new AgentAuthMiddleware());
 
 // 404 handler

@@ -47,8 +47,15 @@ final class AgentsController
             $view = Twig::fromRequest($request);
             return $view->render($response->withStatus(404), '404.twig');
         }
+        // Load agent profile (read-only on admin page)
+        $p = $pdo->prepare('SELECT * FROM agent_profiles WHERE agent_id=:id');
+        $p->execute([':id'=>(int)$args['id']]);
+        $profile = $p->fetch() ?: [];
+        // Check uploaded contract
+        $contractPath = '/uploads/agents/'.(int)$args['id'].'/contract.pdf';
+        $hasContract = is_file(dirname(__DIR__,3).'/public'.$contractPath);
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/agents/form.twig', ['agent' => $agent]);
+        return $view->render($response, 'admin/agents/form.twig', ['agent' => $agent, 'profile'=>$profile, 'contract_uploaded'=>$hasContract, 'contract_url'=>$hasContract ? $contractPath : null]);
     }
 
     public function update(Request $request, Response $response, array $args): Response
@@ -64,6 +71,30 @@ final class AgentsController
             ':id' => $id,
         ]);
         return $response->withHeader('Location', '/admin/agents')->withStatus(302);
+    }
+
+    public function contractUpload(Request $request, Response $response, array $args): Response
+    {
+        $id = (int)$args['id'];
+        $files = $request->getUploadedFiles();
+        $file = $files['contract'] ?? null;
+        if (!$file || $file->getError() !== UPLOAD_ERR_OK) {
+            return $response->withHeader('Location', '/admin/agents/'.$id.'/edit?error=upload')->withStatus(302);
+        }
+        $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
+        if ($ext !== 'pdf') {
+            return $response->withHeader('Location', '/admin/agents/'.$id.'/edit?error=type')->withStatus(302);
+        }
+        $dir = dirname(__DIR__,3).'/public/uploads/agents/'.$id;
+        if(!is_dir($dir)) mkdir($dir, 0777, true);
+        $file->moveTo($dir.'/contract.pdf');
+        return $response->withHeader('Location', '/admin/agents/'.$id.'/edit')->withStatus(302);
+    }
+
+    public function contractMode(Request $request, Response $response, array $args): Response
+    {
+        // Placeholder to store mode in settings or agent-specific table if needed
+        return $response->withHeader('Location', '/admin/agents/'.$args['id'].'/edit')->withStatus(302);
     }
 
     public function delete(Request $request, Response $response, array $args): Response

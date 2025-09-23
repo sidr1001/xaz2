@@ -1,0 +1,9 @@
+<h1>Агентский договор</h1>
+<p>Стороны: {{ profile.org_name|e }} ({{ profile.org_short_name|e }}), в лице {{ profile.ceo|e }}, действующего на основании {{ profile.ceo_basis|e }}.</p>
+<p>ИНН: {{ profile.inn|e }}, ОГРН: {{ profile.ogrn|e }}, ОКПО: {{ profile.okpo|e }}</p>
+<p>Юридический адрес: {{ profile.legal_address|e }}, Фактический адрес: {{ profile.actual_address|e }}</p>
+<p>Банк: {{ profile.bank_name|e }}, БИК/Код банка: {{ profile.bank_code|e }}, Адрес банка: {{ profile.bank_address|e }}</p>
+<p>Р/с: {{ profile.account_number|e }}, Валюта: {{ profile.account_currency|e }}, ИНН банка: {{ profile.bank_inn|e }}, КПП: {{ profile.kpp|e }}</p>
+<p>Номер договора: {{ profile.contract_number|e }}, действует с {{ profile.contract_date_from|e }} по {{ profile.contract_date_to|e }}</p>
+
+<p>Настоящий договор составлен автоматически на основании данных профиля агента.</p>
