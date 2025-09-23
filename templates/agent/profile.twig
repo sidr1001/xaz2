@@ -3,10 +3,10 @@
 {% block content %}
 <h1 class="mb-3">Профиль агента</h1>
 <form method="post" action="/agent/profile" class="row g-3">
-  <div class="col-md-4"><label class="form-label">Email для авторизации</label><input class="form-control" name="email" value="{{ data.email|e }}"></div>
-  <div class="col-md-4"><label class="form-label">Телефон</label><input class="form-control" name="phone" value="{{ data.phone|e }}"></div>
-  <div class="col-md-4"><label class="form-label">Email дополнительный</label><input class="form-control" name="email_alt" value="{{ data.email_alt|e }}"></div>
-  <div class="col-md-4"><label class="form-label">Телефон доп.</label><input class="form-control" name="phone_alt" value="{{ data.phone_alt|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Email для авторизации</label><input class="form-control" type="email" required name="email" value="{{ data.email|e }}" placeholder="name@example.com"></div>
+  <div class="col-md-4"><label class="form-label">Телефон</label><input class="form-control js-mask-phone" required name="phone" value="{{ data.phone|e }}" placeholder="+7 (___) ___-__-__"></div>
+  <div class="col-md-4"><label class="form-label">Email дополнительный</label><input class="form-control" type="email" name="email_alt" value="{{ data.email_alt|e }}" placeholder="name@example.com"></div>
+  <div class="col-md-4"><label class="form-label">Телефон доп.</label><input class="form-control js-mask-phone" name="phone_alt" value="{{ data.phone_alt|e }}" placeholder="+7 (___) ___-__-__"></div>
 
   <div class="col-md-4"><label class="form-label">Фамилия</label><input class="form-control" name="last_name" value="{{ data.last_name|e }}"></div>
   <div class="col-md-4"><label class="form-label">Имя</label><input class="form-control" name="first_name" value="{{ data.first_name|e }}"></div>
@@ -17,9 +17,9 @@
   <div class="col-md-4"><label class="form-label">Юридический адрес</label><input class="form-control" name="legal_address" value="{{ data.legal_address|e }}"></div>
   <div class="col-md-4"><label class="form-label">Фактический адрес</label><input class="form-control" name="actual_address" value="{{ data.actual_address|e }}"></div>
 
-  <div class="col-md-4"><label class="form-label">ИНН</label><input class="form-control" name="inn" value="{{ data.inn|e }}"></div>
+  <div class="col-md-4"><label class="form-label">ИНН</label><input class="form-control js-mask-inn" name="inn" value="{{ data.inn|e }}" placeholder="10 или 12 цифр"></div>
   <div class="col-md-4"><label class="form-label">ОГРН</label><input class="form-control" name="ogrn" value="{{ data.ogrn|e }}"></div>
-  <div class="col-md-4"><label class="form-label">ОКПО</label><input class="form-control" name="okpo" value="{{ data.okpo|e }}"></div>
+  <div class="col-md-4"><label class="form-label">ОКПО</label><input class="form-control js-mask-okpo" name="okpo" value="{{ data.okpo|e }}" placeholder="8 или 10 цифр"></div>
 
   <div class="col-md-4"><label class="form-label">Генеральный директор</label><input class="form-control" name="ceo" value="{{ data.ceo|e }}"></div>
   <div class="col-md-4"><label class="form-label">(Директор) действует на основании</label><input class="form-control" name="ceo_basis" value="{{ data.ceo_basis|e }}"></div>
@@ -33,8 +33,8 @@
   <div class="col-md-4"><label class="form-label">Наименование банка</label><input class="form-control" name="bank_name" value="{{ data.bank_name|e }}"></div>
   <div class="col-md-4"><label class="form-label">Код банка</label><input class="form-control" name="bank_code" value="{{ data.bank_code|e }}"></div>
   <div class="col-md-4"><label class="form-label">Адрес банка</label><input class="form-control" name="bank_address" value="{{ data.bank_address|e }}"></div>
-  <div class="col-md-4"><label class="form-label">ИНН банка</label><input class="form-control" name="bank_inn" value="{{ data.bank_inn|e }}"></div>
-  <div class="col-md-4"><label class="form-label">КПП</label><input class="form-control" name="kpp" value="{{ data.kpp|e }}"></div>
+  <div class="col-md-4"><label class="form-label">ИНН банка</label><input class="form-control js-mask-inn" name="bank_inn" value="{{ data.bank_inn|e }}"></div>
+  <div class="col-md-4"><label class="form-label">КПП</label><input class="form-control js-mask-kpp" name="kpp" value="{{ data.kpp|e }}"></div>
 
   <div class="col-12 d-flex gap-2">
     <button class="btn btn-primary">Сохранить</button>
@@ -58,5 +58,16 @@
     </form>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function(){
+  $('.js-mask-phone').inputmask({ mask: '+7 (999) 999-99-99' });
+  $('.js-mask-inn').inputmask({ mask: '9{10,12}', greedy: false, placeholder: '' });
+  $('.js-mask-kpp').inputmask({ mask: '9{9}', placeholder: '' });
+  $('.js-mask-okpo').inputmask({ mask: '9{8,10}', greedy: false, placeholder: '' });
+});
+</script>
 {% endblock %}
 

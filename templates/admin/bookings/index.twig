@@ -2,6 +2,33 @@
 
 {% block content %}
 <h1 class="mb-3">Заявки</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-sm-2"><input class="form-control" name="id" value="{{ filters.id|e }}" placeholder="№ заявки"></div>
+  <div class="col-sm-2"><input class="form-control" type="date" name="created_from" value="{{ filters.created_from|e }}" placeholder="Создан с"></div>
+  <div class="col-sm-2"><input class="form-control" type="date" name="created_to" value="{{ filters.created_to|e }}" placeholder="Создан по"></div>
+  <div class="col-sm-2"><input class="form-control" type="date" name="trip_from" value="{{ filters.trip_from|e }}" placeholder="Поездка с"></div>
+  <div class="col-sm-2"><input class="form-control" type="date" name="trip_to" value="{{ filters.trip_to|e }}" placeholder="Поездка по"></div>
+  <div class="col-sm-1">
+    <select name="order_status" class="form-select">
+      <option value="">Статус заказа</option>
+      {% for v,t in {'new':'Новая','in_progress':'В работе','paid':'Оплачен','cancel_request':'Запрос на аннуляцию','cancelled':'Аннуляция','waitlist':'Лист ожидания','confirmed':'Подтвержден','rejected':'Отказ','on_request':'Под запрос'} %}
+      <option value="{{ v }}" {{ filters.order_status==v ? 'selected' }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-1">
+    <select name="payment_status" class="form-select">
+      <option value="">Статус оплаты</option>
+      {% for v,t in {'paid':'Оплачен','unpaid':'Не оплачен','cancelled':'Отменен','partial':'Оплачен не полностью'} %}
+      <option value="{{ v }}" {{ filters.payment_status==v ? 'selected' }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-2 d-flex gap-2">
+    <button class="btn btn-primary">Фильтр</button>
+    <a href="/admin/bookings" class="btn btn-outline-secondary">Сброс</a>
+  </div>
+ </form>
 
 <div class="table-responsive">
   <table class="table table-striped align-middle">
@@ -11,7 +38,8 @@
         <th>Тур</th>
         <th>Клиент</th>
         <th>Сумма</th>
-        <th>Статус</th>
+        <th>Ст. заказа</th>
+        <th>Ст. оплаты</th>
         <th>Дата</th>
         <th></th>
       </tr>
@@ -23,7 +51,8 @@
         <td>{{ b.tour_title|e }}</td>
         <td>{{ b.customer_name|e }}<br><small>{{ b.customer_phone|e }} / {{ b.customer_email|e }}</small></td>
         <td>{{ b.total_amount|e }}</td>
-        <td>{{ b.status|e }}</td>
+        <td>{{ b.order_status|default('new')|e }}</td>
+        <td>{{ b.payment_status|default('unpaid')|e }}</td>
         <td>{{ b.created_at|e }}</td>
         <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/admin/bookings/{{ b.id }}">Открыть</a></td>
       </tr>
