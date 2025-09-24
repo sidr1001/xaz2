@@ -96,6 +96,7 @@ $app->group('/agent', function (RouteCollectorProxy $group) {
     $group->get('/bookings', [AgentBookingsController::class, 'index']);
     $group->get('/bookings/{id}', [AgentBookingsController::class, 'view']);
     $group->post('/bookings/{id}/comment', [AgentBookingsController::class, 'comment']);
+    $group->post('/bookings/{id}/comment', [AgentBookingsController::class, 'comment']);
     $group->post('/bookings/{id}/documents', [AgentBookingsController::class, 'generateDocuments']);
     $group->get('/tourists', [\App\Controller\Agent\TouristsController::class, 'index']);
     $group->get('/tourists/{id}/edit', [\App\Controller\Agent\TouristsController::class, 'edit']);

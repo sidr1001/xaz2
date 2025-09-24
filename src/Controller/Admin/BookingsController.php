@@ -60,6 +60,12 @@ final class BookingsController
         $tourists->execute([':b' => $id]);
         $touristsList = $tourists->fetchAll();
 
+        // Fallback: read agent_comment from file if not in DB
+        if (!isset($booking['agent_comment']) || $booking['agent_comment'] === null || $booking['agent_comment'] === '') {
+            $cfile = dirname(__DIR__, 3) . '/public/uploads/documents/' . $id . '/agent_comment.txt';
+            if (is_file($cfile)) { $booking['agent_comment'] = trim((string)file_get_contents($cfile)); }
+        }
+
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/bookings/view.twig', [
             'booking' => $booking,
