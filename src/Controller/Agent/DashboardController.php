@@ -60,6 +60,9 @@ final class DashboardController
             'values' => $vals,
             'priceMin' => (int)$priceMin,
             'priceMax' => (int)$priceMax,
+            'breadcrumbs' => [
+                ['title' => 'Кабинет агента']
+            ],
         ]);
     }
 }

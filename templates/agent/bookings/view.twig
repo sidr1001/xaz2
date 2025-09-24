@@ -17,7 +17,18 @@
         <h5 class="card-title">Клиент</h5>
         <p>{{ booking.customer_name|e }}<br>{{ booking.customer_phone|e }}<br>{{ booking.customer_email|e }}</p>
         <p><strong>Сумма:</strong> {{ booking.total_amount|e }}</p>
-        <p><strong>Статус:</strong> {{ booking.status|e }}</p>
+        <p><strong>Статус заказа:</strong>
+          {% set omap = {'new':'Новая','in_progress':'В работе','paid':'Оплачен','cancel_request':'Запрос на аннуляцию','cancelled':'Аннуляция','waitlist':'Лист ожидания','confirmed':'Подтвержден','rejected':'Отказ','on_request':'Под запрос'} %}
+          {% set oclass = {'new':'secondary','in_progress':'info','paid':'success','cancel_request':'warning','cancelled':'dark','waitlist':'secondary','confirmed':'primary','rejected':'danger','on_request':'warning'} %}
+          {% set ov = booking.order_status|default(booking.status|default('new')) %}
+          <span class="badge bg-{{ oclass[ov]|default('secondary') }}">{{ omap[ov]|default(ov) }}</span>
+        </p>
+        <p><strong>Статус оплаты:</strong>
+          {% set pmap = {'paid':'Оплачен','unpaid':'Не оплачен','cancelled':'Отменен','partial':'Оплачен не полностью'} %}
+          {% set pclass = {'paid':'success','unpaid':'secondary','cancelled':'dark','partial':'warning'} %}
+          {% set pv = booking.payment_status|default('unpaid') %}
+          <span class="badge bg-{{ pclass[pv]|default('secondary') }}">{{ pmap[pv]|default(pv) }}</span>
+        </p>
         <p><strong>Тур:</strong> {{ booking.tour_title|e }}</p>
         {% if booking.bus_seats %}
         <p><strong>Места в автобусе:</strong> {{ booking.bus_seats|e }}</p>

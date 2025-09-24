@@ -17,6 +17,10 @@ final class TouristsController
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/tourists/index.twig', [
             'tourists' => $list,
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Туристы'],
+            ],
         ]);
     }
 
@@ -33,7 +37,15 @@ final class TouristsController
         }
         $files = self::listFiles($id);
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tourists/form.twig', ['t' => $t, 'files' => $files]);
+        return $view->render($response, 'admin/tourists/form.twig', [
+            't' => $t,
+            'files' => $files,
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Туристы', 'url' => '/admin/tourists'],
+                ['title' => 'Редактировать'],
+            ],
+        ]);
     }
 
     public function update(Request $request, Response $response, array $args): Response

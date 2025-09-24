@@ -21,7 +21,13 @@ final class ProfileController
         $pdo = Database::getConnection();
         $data = $this->getProfile($pdo, $agentId);
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'agent/profile.twig', ['data' => $data]);
+        return $view->render($response, 'agent/profile.twig', [
+            'data' => $data,
+            'breadcrumbs' => [
+                ['title' => 'Кабинет агента', 'url' => '/agent'],
+                ['title' => 'Профиль'],
+            ],
+        ]);
     }
 
     public function save(Request $request, Response $response): Response
@@ -33,7 +39,10 @@ final class ProfileController
         foreach (self::FIELDS as $f) {
             $val = trim((string)($in[$f] ?? ''));
             if (in_array($f, ['contract_date_from','contract_date_to'], true)) {
-                $val = $val !== '' ? $val : null;
+                // Normalize empty/invalid dates to NULL to avoid SQLSTATE[22007]
+                if ($val === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) {
+                    $val = null;
+                }
             }
             $pairs[$f] = $val;
         }

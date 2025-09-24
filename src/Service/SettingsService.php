@@ -25,6 +25,12 @@ final class SettingsService
         if (!isset($settings['card_image_height'])) {
             $settings['card_image_height'] = '320';
         }
+        if (!isset($settings['operator_signature_path'])) {
+            $settings['operator_signature_path'] = is_file(dirname(__DIR__,3).'/public/uploads/operator/signature.png') ? '/uploads/operator/signature.png' : null;
+        }
+        if (!isset($settings['operator_stamp_path'])) {
+            $settings['operator_stamp_path'] = is_file(dirname(__DIR__,3).'/public/uploads/operator/stamp.png') ? '/uploads/operator/stamp.png' : null;
+        }
         return $settings;
     }
 

@@ -15,6 +15,10 @@ final class SettingsController
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/settings.twig', [
             'settings' => SettingsService::getAll(),
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Настройки'],
+            ],
         ]);
     }
 
@@ -29,6 +33,29 @@ final class SettingsController
         }
         // toggles
         SettingsService::set('bus_seat_selection_enabled', isset($data['bus_seat_selection_enabled']) ? '1' : '0');
+
+        // handle uploads
+        $files = $request->getUploadedFiles();
+        $uploadDir = dirname(__DIR__, 3) . '/public/uploads/operator';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        if (isset($files['operator_signature']) && $files['operator_signature']->getError() === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($files['operator_signature']->getClientFilename(), PATHINFO_EXTENSION));
+            if (in_array($ext, ['png','jpg','jpeg'], true)) {
+                $path = $uploadDir . '/signature.png';
+                $files['operator_signature']->moveTo($path);
+                SettingsService::set('operator_signature_path', str_replace(dirname(__DIR__,3).'/public', '', $path));
+            }
+        }
+        if (isset($files['operator_stamp']) && $files['operator_stamp']->getError() === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($files['operator_stamp']->getClientFilename(), PATHINFO_EXTENSION));
+            if (in_array($ext, ['png','jpg','jpeg'], true)) {
+                $path = $uploadDir . '/stamp.png';
+                $files['operator_stamp']->moveTo($path);
+                SettingsService::set('operator_stamp_path', str_replace(dirname(__DIR__,3).'/public', '', $path));
+            }
+        }
         return $response->withHeader('Location', '/admin/settings')->withStatus(302);
     }
 }
