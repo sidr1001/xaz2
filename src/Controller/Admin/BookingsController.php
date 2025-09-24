@@ -44,12 +44,17 @@ final class BookingsController
     {
         $id = (int)$args['id'];
         $pdo = Database::getConnection();
-		$stmt = $pdo->prepare('SELECT b.*, a.login AS agent_login FROM bookings b LEFT JOIN agents a ON a.id=b.agent_id WHERE b.id=:id');
+        $stmt = $pdo->prepare('SELECT b.*, a.login AS agent_login FROM bookings b LEFT JOIN agents a ON a.id=b.agent_id WHERE b.id=:id');
         $stmt->execute([':id' => $id]);
         $booking = $stmt->fetch();
         if (!$booking) {
             $view = Twig::fromRequest($request);
             return $view->render($response->withStatus(404), '404.twig');
+        }
+        // Fallback: read agent_comment from file if not in DB
+        if (!isset($booking['agent_comment']) || $booking['agent_comment'] === null || $booking['agent_comment'] === '') {
+            $cfile = dirname(__DIR__, 3) . '/public/uploads/documents/' . $id . '/agent_comment.txt';
+            if (is_file($cfile)) { $booking['agent_comment'] = trim((string)file_get_contents($cfile)); }
         }
         $tourists = $pdo->prepare('SELECT * FROM tourists WHERE booking_id=:b');
         $tourists->execute([':b' => $id]);

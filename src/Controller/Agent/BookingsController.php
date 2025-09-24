@@ -54,6 +54,13 @@ final class BookingsController
             $view = Twig::fromRequest($request);
             return $view->render($response->withStatus(404), '404.twig');
         }
+        // Fallback: load agent_comment from file if column missing/empty
+        if (!isset($booking['agent_comment']) || $booking['agent_comment'] === null || $booking['agent_comment'] === '') {
+            $cfile = dirname(__DIR__, 3) . '/public/uploads/documents/' . $id . '/agent_comment.txt';
+            if (is_file($cfile)) {
+                $booking['agent_comment'] = trim((string)file_get_contents($cfile));
+            }
+        }
         $tourists = $pdo->prepare('SELECT * FROM tourists WHERE booking_id=:b');
         $tourists->execute([':b' => $id]);
         $touristsList = $tourists->fetchAll();
@@ -68,6 +75,31 @@ final class BookingsController
                 ['title' => 'Заявка #'.$id],
             ],
         ]);
+    }
+
+    public function comment(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        // access check
+        $chk = $pdo->prepare('SELECT COUNT(*) FROM bookings WHERE id=:id AND agent_id=:a');
+        $chk->execute([':id'=>$id, ':a'=>$agentId]);
+        if ((int)$chk->fetchColumn() === 0) {
+            return $response->withStatus(403);
+        }
+        $data = (array)$request->getParsedBody();
+        $comment = trim((string)($data['agent_comment'] ?? ''));
+        try {
+            $stmt = $pdo->prepare('UPDATE bookings SET agent_comment=:c WHERE id=:id AND agent_id=:a');
+            $stmt->execute([':c'=>$comment, ':id'=>$id, ':a'=>$agentId]);
+        } catch (\Throwable $e) {
+            // Fallback to filesystem storage if column doesn't exist
+            $dir = dirname(__DIR__, 3) . '/public/uploads/documents/' . $id;
+            if (!is_dir($dir)) { mkdir($dir, 0777, true); }
+            file_put_contents($dir . '/agent_comment.txt', $comment);
+        }
+        return $response->withHeader('Location', '/agent/bookings/'.$id)->withStatus(302);
     }
 
     public function generateDocuments(Request $request, Response $response, array $args): Response
