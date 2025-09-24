@@ -15,6 +15,16 @@ final class SettingsService
         foreach ($stmt->fetchAll() as $row) {
             $settings[$row['key']] = $row['value'];
         }
+        // Defaults
+        if (!isset($settings['bus_seat_selection_enabled'])) {
+            $settings['bus_seat_selection_enabled'] = '0';
+        }
+        if (!isset($settings['card_image_width'])) {
+            $settings['card_image_width'] = '480';
+        }
+        if (!isset($settings['card_image_height'])) {
+            $settings['card_image_height'] = '320';
+        }
         return $settings;
     }
 

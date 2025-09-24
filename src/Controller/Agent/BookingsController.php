@@ -15,13 +15,85 @@ final class BookingsController
     {
         $agentId = (int)($_SESSION['agent_id'] ?? 0);
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('SELECT b.*, t.title AS tour_title FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id WHERE b.agent_id=:a ORDER BY b.created_at DESC');
-        $stmt->execute([':a' => $agentId]);
+        $q = $request->getQueryParams();
+        $cond = ['b.agent_id = :a'];
+        $p = [':a' => $agentId];
+        if (isset($q['id']) && $q['id'] !== '') { $cond[] = 'b.id = :id'; $p[':id'] = (int)$q['id']; }
+        if (isset($q['created_from']) && $q['created_from'] !== '') { $cond[] = 'b.created_at >= :cf'; $p[':cf'] = $q['created_from']; }
+        if (isset($q['created_to']) && $q['created_to'] !== '') { $cond[] = 'b.created_at <= :ct'; $p[':ct'] = $q['created_to']; }
+        if (isset($q['trip_from']) && $q['trip_from'] !== '') { $cond[] = 't.start_date >= :tf'; $p[':tf'] = $q['trip_from']; }
+        if (isset($q['trip_to']) && $q['trip_to'] !== '') { $cond[] = 't.end_date <= :tt'; $p[':tt'] = $q['trip_to']; }
+        if (isset($q['order_status']) && $q['order_status'] !== '') { $cond[] = 'b.order_status = :os'; $p[':os'] = $q['order_status']; }
+        if (isset($q['payment_status']) && $q['payment_status'] !== '') { $cond[] = 'b.payment_status = :ps'; $p[':ps'] = $q['payment_status']; }
+        $where = 'WHERE ' . implode(' AND ', $cond);
+        $sql = "SELECT b.*, t.title AS tour_title, t.start_date, t.end_date FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id $where ORDER BY b.created_at DESC";
+        $stmt = $pdo->prepare($sql);
+        foreach ($p as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->execute();
         $list = $stmt->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'agent/bookings/index.twig', ['bookings' => $list]);
+        return $view->render($response, 'agent/bookings/index.twig', [
+            'bookings' => $list,
+            'filters' => $q,
+            'breadcrumbs' => [
+                ['title' => 'Кабинет агента', 'url' => '/agent'],
+                ['title' => 'Заявки'],
+            ],
+        ]);
     }
 
+    public function view(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT b.*, t.title AS tour_title FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id WHERE b.id=:id AND b.agent_id=:a');
+        $stmt->execute([':id' => $id, ':a' => $agentId]);
+        $booking = $stmt->fetch();
+        if (!$booking) {
+            $view = Twig::fromRequest($request);
+            return $view->render($response->withStatus(404), '404.twig');
+        }
+        $tourists = $pdo->prepare('SELECT * FROM tourists WHERE booking_id=:b');
+        $tourists->execute([':b' => $id]);
+        $touristsList = $tourists->fetchAll();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 'agent/bookings/view.twig', [
+            'booking' => $booking,
+            'tourists' => $touristsList,
+            'breadcrumbs' => [
+                ['title' => 'Кабинет агента', 'url' => '/agent'],
+                ['title' => 'Заявки', 'url' => '/agent/bookings'],
+                ['title' => 'Заявка #'.$id],
+            ],
+        ]);
+    }
+
+    public function generateDocuments(Request $request, Response $response, array $args): Response
+    {
+        $agentId = (int)($_SESSION['agent_id'] ?? 0);
+        $id = (int)$args['id'];
+        $pdo = Database::getConnection();
+        // check access
+        $stmt = $pdo->prepare('SELECT * FROM bookings WHERE id=:id AND agent_id=:a');
+        $stmt->execute([':id' => $id, ':a' => $agentId]);
+        $booking = $stmt->fetch();
+        if (!$booking) {
+            $response->getBody()->write(json_encode(['ok'=>false, 'error'=>'Not found']));
+            return $response->withHeader('Content-Type','application/json');
+        }
+
+        $files = [];
+        foreach (['contract','insurance','voucher','tickets'] as $doc) {
+            $filepath = dirname(__DIR__, 3) . '/public/uploads/documents/' . $id . '/' . $doc . '.pdf';
+            PdfService::renderTemplateToFile($request, 'documents/' . $doc . '.twig', ['booking' => $booking], $filepath);
+            $files[$doc] = str_replace(dirname(__DIR__, 3) . '/public', '', $filepath);
+        }
+
+        $response->getBody()->write(json_encode(['ok'=>true, 'files'=>$files], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
+    }
     public function create(Request $request, Response $response, array $args): Response
     {
         $tourId = (int)($args['tour_id'] ?? 0);
@@ -46,6 +118,16 @@ final class BookingsController
                 ':amount' => (float)($data['total_amount'] ?? 0),
             ]);
             $bookingId = (int)$pdo->lastInsertId();
+
+            // Save bus seats if provided (optional column bookings.bus_seats)
+            $busSeats = trim((string)($data['bus_seats'] ?? ''));
+            if ($busSeats !== '') {
+                try {
+                    $pdo->prepare('UPDATE bookings SET bus_seats=:s WHERE id=:id')->execute([':s' => $busSeats, ':id' => $bookingId]);
+                } catch (\Throwable $e) {
+                    // Ignore if column doesn't exist
+                }
+            }
 
             $tourists = $data['tourists'] ?? [];
             $stmtT = $pdo->prepare('INSERT INTO tourists(booking_id, full_name, birth_date, passport, phone, email) VALUES(:b,:n,:d,:p,:ph,:e)');

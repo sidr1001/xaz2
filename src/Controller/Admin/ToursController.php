@@ -15,13 +15,17 @@ final class ToursController
         $pdo = Database::getConnection();
         $tours = $pdo->query('SELECT * FROM tours ORDER BY created_at DESC')->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tours/index.twig', ['tours' => $tours]);
+        return $view->render($response, 'admin/tours/index.twig', ['tours' => $tours, 'breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Туры']
+        ]]);
     }
 
     public function create(Request $request, Response $response): Response
     {
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tours/form.twig');
+        return $view->render($response, 'admin/tours/form.twig', ['breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Туры','url'=>'/admin/tours'],['title'=>'Добавить']
+        ]]);
     }
 
     public function store(Request $request, Response $response): Response
@@ -34,6 +38,17 @@ final class ToursController
         }
 
         $pdo = Database::getConnection();
+        // Normalize dates and nullable fields
+        $startDate = trim((string)($data['start_date'] ?? ''));
+        $endDate = trim((string)($data['end_date'] ?? ''));
+        $startDate = $startDate !== '' ? $startDate : null;
+        $endDate = $endDate !== '' ? $endDate : null;
+        $duration = trim((string)($data['duration_days'] ?? ''));
+        $duration = $duration !== '' ? (int)$duration : null;
+        $departureCity = trim((string)($data['departure_city'] ?? ''));
+        $departureCity = $departureCity !== '' ? $departureCity : null;
+        $tourType = $data['tour_type'] ?? null;
+
         $stmt = $pdo->prepare('INSERT INTO tours(title, description, city, region, country, price, start_date, end_date, tour_type, duration_days, departure_city, image, created_at) VALUES(:title, :description, :city, :region, :country, :price, :start_date, :end_date, :tour_type, :duration_days, :departure_city, :image, NOW())');
         $stmt->execute([
             ':title' => trim((string)($data['title'] ?? '')),
@@ -42,11 +57,11 @@ final class ToursController
             ':region' => trim((string)($data['region'] ?? '')),
             ':country' => trim((string)($data['country'] ?? '')),
             ':price' => (float)($data['price'] ?? 0),
-            ':start_date' => $data['start_date'] ?? null,
-            ':end_date' => $data['end_date'] ?? null,
-            ':tour_type' => $data['tour_type'] ?? null,
-            ':duration_days' => isset($data['duration_days']) ? (int)$data['duration_days'] : null,
-            ':departure_city' => $data['departure_city'] ?? null,
+            ':start_date' => $startDate,
+            ':end_date' => $endDate,
+            ':tour_type' => $tourType,
+            ':duration_days' => $duration,
+            ':departure_city' => $departureCity,
             ':image' => $imagePath,
         ]);
 
@@ -76,7 +91,9 @@ final class ToursController
             return $view->render($response->withStatus(404), '404.twig');
         }
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/tours/form.twig', ['tour' => $tour]);
+        return $view->render($response, 'admin/tours/form.twig', ['tour' => $tour, 'breadcrumbs'=>[
+            ['title'=>'Админка','url'=>'/admin'],['title'=>'Туры','url'=>'/admin/tours'],['title'=>'Редактировать']
+        ]]);
     }
 
     public function update(Request $request, Response $response, array $args): Response
@@ -90,6 +107,17 @@ final class ToursController
         }
 
         $pdo = Database::getConnection();
+        // Normalize dates and nullable fields for update
+        $startDate = trim((string)($data['start_date'] ?? ''));
+        $endDate = trim((string)($data['end_date'] ?? ''));
+        $startDate = $startDate !== '' ? $startDate : null;
+        $endDate = $endDate !== '' ? $endDate : null;
+        $duration = trim((string)($data['duration_days'] ?? ''));
+        $duration = $duration !== '' ? (int)$duration : null;
+        $departureCity = trim((string)($data['departure_city'] ?? ''));
+        $departureCity = $departureCity !== '' ? $departureCity : null;
+        $tourType = $data['tour_type'] ?? null;
+
         $stmt = $pdo->prepare('UPDATE tours SET title=:title, description=:description, city=:city, region=:region, country=:country, price=:price, start_date=:start_date, end_date=:end_date, tour_type=:tour_type, duration_days=:duration_days, departure_city=:departure_city' . ($imagePath ? ', image=:image' : '') . ' WHERE id=:id');
         $params = [
             ':title' => trim((string)($data['title'] ?? '')),
@@ -98,11 +126,11 @@ final class ToursController
             ':region' => trim((string)($data['region'] ?? '')),
             ':country' => trim((string)($data['country'] ?? '')),
             ':price' => (float)($data['price'] ?? 0),
-            ':start_date' => $data['start_date'] ?? null,
-            ':end_date' => $data['end_date'] ?? null,
-            ':tour_type' => $data['tour_type'] ?? null,
-            ':duration_days' => isset($data['duration_days']) ? (int)$data['duration_days'] : null,
-            ':departure_city' => $data['departure_city'] ?? null,
+            ':start_date' => $startDate,
+            ':end_date' => $endDate,
+            ':tour_type' => $tourType,
+            ':duration_days' => $duration,
+            ':departure_city' => $departureCity,
             ':id' => $id,
         ];
         if ($imagePath) {

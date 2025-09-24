@@ -2,7 +2,11 @@
   {% for tour in tours %}
     <div class="col-md-4">
       <div class="card h-100">
-        {% if tour.image %}<img src="{{ tour.image|e }}" class="card-img-top" alt="">{% endif %}
+        {% if tour.image %}
+          <div class="ratio" style="--bs-aspect-ratio: {{ (settings.card_image_height|default(320) / settings.card_image_width|default(480) * 100) | number_format(6, '.', '') }}%">
+            <img src="{{ tour.image|e }}" class="w-100 h-100" style="object-fit: cover;" alt="">
+          </div>
+        {% endif %}
         <div class="card-body">
           <h5 class="card-title">{{ tour.title|e }}</h5>
           <p class="card-text text-muted">{{ tour.country|e }}, {{ tour.region|e }}, {{ tour.city|e }}</p>

@@ -1,0 +1,13 @@
+{% if breadcrumbs is defined and breadcrumbs|length > 0 %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    {% for crumb in breadcrumbs %}
+      {% if crumb.url is defined and crumb.url %}
+        <li class="breadcrumb-item"><a href="{{ crumb.url|e }}">{{ crumb.title|e }}</a></li>
+      {% else %}
+        <li class="breadcrumb-item active" aria-current="page">{{ crumb.title|e }}</li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}

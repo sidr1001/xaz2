@@ -11,5 +11,8 @@ $(function(){
   }
   $('#apply-filters').on('click', function(e){ e.preventDefault(); page=1; load(true); });
   $('#load-more').on('click', function(e){ e.preventDefault(); page++; load(false); });
+
+  // Price slider via noUiSlider (shared)
+  if (window.initPriceSlider) { window.initPriceSlider('#filters'); }
 });
 

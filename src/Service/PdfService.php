@@ -14,8 +14,13 @@ final class PdfService
     {
         $options = new Options();
         $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isFontSubsettingEnabled', true);
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
+        $prefix = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
+            . '<style>body{font-family:"DejaVu Sans", DejaVu Sans, sans-serif;}</style>';
+        $dompdf->loadHtml($prefix . $html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         return (string)$dompdf->output();

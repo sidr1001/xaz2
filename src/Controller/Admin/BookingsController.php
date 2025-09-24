@@ -14,9 +14,30 @@ final class BookingsController
     public function index(Request $request, Response $response): Response
     {
         $pdo = Database::getConnection();
-        $list = $pdo->query('SELECT b.*, t.title AS tour_title, a.login AS agent_login FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id LEFT JOIN agents a ON a.id=b.agent_id ORDER BY b.created_at DESC')->fetchAll();
+        $q = $request->getQueryParams();
+        $cond = [];$p=[];
+        if(isset($q['id']) && $q['id']!==''){ $cond[]='b.id = :id'; $p[':id']=(int)$q['id']; }
+        if(isset($q['created_from']) && $q['created_from']!==''){ $cond[]='b.created_at >= :cf'; $p[':cf']=$q['created_from']; }
+        if(isset($q['created_to']) && $q['created_to']!==''){ $cond[]='b.created_at <= :ct'; $p[':ct']=$q['created_to']; }
+        if(isset($q['trip_from']) && $q['trip_from']!==''){ $cond[]='t.start_date >= :tf'; $p[':tf']=$q['trip_from']; }
+        if(isset($q['trip_to']) && $q['trip_to']!==''){ $cond[]='t.end_date <= :tt'; $p[':tt']=$q['trip_to']; }
+        if(isset($q['order_status']) && $q['order_status']!==''){ $cond[]='b.order_status = :os'; $p[':os']=$q['order_status']; }
+        if(isset($q['payment_status']) && $q['payment_status']!==''){ $cond[]='b.payment_status = :ps'; $p[':ps']=$q['payment_status']; }
+        $where = $cond ? ('WHERE '.implode(' AND ',$cond)) : '';
+        $sql = "SELECT b.*, t.title AS tour_title, a.login AS agent_login FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id LEFT JOIN agents a ON a.id=b.agent_id $where ORDER BY b.created_at DESC";
+        $stmt = $pdo->prepare($sql);
+        foreach($p as $k=>$v){ $stmt->bindValue($k,$v); }
+        $stmt->execute();
+        $list = $stmt->fetchAll();
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/bookings/index.twig', ['bookings' => $list]);
+        return $view->render($response, 'admin/bookings/index.twig', [
+            'bookings' => $list,
+            'filters'=>$q,
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Заявки'],
+            ],
+        ]);
     }
 
     public function view(Request $request, Response $response, array $args): Response
@@ -38,16 +59,33 @@ final class BookingsController
         return $view->render($response, 'admin/bookings/view.twig', [
             'booking' => $booking,
             'tourists' => $touristsList,
+            'breadcrumbs' => [
+                ['title' => 'Админка', 'url' => '/admin'],
+                ['title' => 'Заявки', 'url' => '/admin/bookings'],
+                ['title' => 'Заявка #'.$id],
+            ],
         ]);
     }
 
-    public function status(Request $request, Response $response, array $args): Response
+    public function paymentStatus(Request $request, Response $response, array $args): Response
     {
         $id = (int)$args['id'];
         $data = (array)$request->getParsedBody();
-        $status = in_array(($data['status'] ?? ''), ['pending','confirmed','cancelled'], true) ? $data['status'] : 'pending';
+        $status = in_array(($data['payment_status'] ?? ''), ['paid','unpaid','cancelled','partial'], true) ? $data['payment_status'] : 'unpaid';
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('UPDATE bookings SET status=:s WHERE id=:id');
+        $stmt = $pdo->prepare('UPDATE bookings SET payment_status=:s WHERE id=:id');
+        $stmt->execute([':s' => $status, ':id' => $id]);
+        return $response->withHeader('Location', '/admin/bookings/'.$id)->withStatus(302);
+    }
+
+    public function orderStatus(Request $request, Response $response, array $args): Response
+    {
+        $id = (int)$args['id'];
+        $data = (array)$request->getParsedBody();
+        $allowed = ['new','in_progress','paid','cancel_request','cancelled','waitlist','confirmed','rejected','on_request'];
+        $status = in_array(($data['order_status'] ?? ''), $allowed, true) ? $data['order_status'] : 'new';
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('UPDATE bookings SET order_status=:s WHERE id=:id');
         $stmt->execute([':s' => $status, ':id' => $id]);
         return $response->withHeader('Location', '/admin/bookings/'.$id)->withStatus(302);
     }

@@ -28,6 +28,30 @@
     <input class="form-control" name="payment_methods" value="{{ settings.payment_methods|default('online,invoice')|e }}">
   </div>
   <div class="col-12">
+    <div class="form-check form-switch mt-2">
+      <input class="form-check-input" type="checkbox" id="bus_seat_selection_enabled" name="bus_seat_selection_enabled" value="1" {{ settings.bus_seat_selection_enabled == '1' ? 'checked' }}>
+      <label class="form-check-label" for="bus_seat_selection_enabled">Включить выбор мест в автобусе</label>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Ширина изображения карточки (px)</label>
+    <input class="form-control" type="number" name="card_image_width" value="{{ settings.card_image_width|default('480')|e }}">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Высота изображения карточки (px)</label>
+    <input class="form-control" type="number" name="card_image_height" value="{{ settings.card_image_height|default('320')|e }}">
+  </div>
+  <div class="col-12"><hr></div>
+  <div class="col-md-6">
+    <label class="form-label">Подпись туроператора (PNG/JPG)</label>
+    <input class="form-control" type="file" name="operator_signature" accept=".png,.jpg,.jpeg" disabled>
+    <div class="form-text">Примечание: для загрузки понадобится обновить форму на multipart. Могу включить по вашему подтверждению.</div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Печать туроператора (PNG/JPG)</label>
+    <input class="form-control" type="file" name="operator_stamp" accept=".png,.jpg,.jpeg" disabled>
+  </div>
+  <div class="col-12">
     <button class="btn btn-primary">Сохранить</button>
   </div>
   </form>
