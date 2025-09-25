@@ -4,7 +4,10 @@ $(function(){
     console.error('AJAX error', xhr.status, xhr.responseText);
   });
 
-  // Example modal confirm usage can be hooked per-page
+  // mark user interaction on daterange inputs
+  $('input[name="created_range"], input[name="trip_range"]').on('change input', function(){
+    $(this).data('userSet', true);
+  });
 
   // daterange inputs -> hidden from/to fields
   function bindRange(inputSelector, fromName, toName){
@@ -12,10 +15,6 @@ $(function(){
     if(!$inp.length) return;
     function apply(){
       const val = ($inp.val()||'').toString().trim();
-      const parts = val.split('-');
-      if(parts.length >= 3){
-        // Could be single date with dashes, expect format "YYYY-MM-DD - YYYY-MM-DD"
-      }
       const m = val.match(/^(\d{4}-\d{2}-\d{2})\s*-\s*(\d{4}-\d{2}-\d{2})$/);
       const from = m ? m[1] : '';
       const to = m ? m[2] : '';

@@ -4,8 +4,8 @@
 <h1 class="mb-3">Заявки</h1>
 <form class="row g-2 mb-3" method="get">
   <div class="col-sm-2"><input class="form-control" name="id" value="{{ filters.id|e }}" placeholder="№ заявки"></div>
-  <div class="col-sm-3"><input class="form-control" name="created_range" value="{{ filters.created_from and filters.created_to ? (filters.created_from ~ ' - ' ~ filters.created_to) : '' }}" placeholder="Период создания (YYYY-MM-DD - YYYY-MM-DD)"></div>
-  <div class="col-sm-3"><input class="form-control" name="trip_range" value="{{ filters.trip_from and filters.trip_to ? (filters.trip_from ~ ' - ' ~ filters.trip_to) : '' }}" placeholder="Период поездки (YYYY-MM-DD - YYYY-MM-DD)"></div>
+  <div class="col-sm-3"><input class="form-control" name="created_range" value="{{ filters.created_from and filters.created_to ? (filters.created_from ~ ' - ' ~ filters.created_to) : '' }}" placeholder="Период создания"></div>
+  <div class="col-sm-3"><input class="form-control" name="trip_range" value="{{ filters.trip_from and filters.trip_to ? (filters.trip_from ~ ' - ' ~ filters.trip_to) : '' }}" placeholder="Период поездки"></div>
   <input type="hidden" name="created_from" value="{{ filters.created_from|e }}">
   <input type="hidden" name="created_to" value="{{ filters.created_to|e }}">
   <input type="hidden" name="trip_from" value="{{ filters.trip_from|e }}">

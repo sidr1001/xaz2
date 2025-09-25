@@ -13,8 +13,10 @@ final class SettingsController
     public function index(Request $request, Response $response): Response
     {
         $view = Twig::fromRequest($request);
+        $settings = SettingsService::getAll();
         return $view->render($response, 'admin/settings.twig', [
-            'settings' => SettingsService::getAll(),
+            'settings' => $settings,
+            'query_log' => $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [],
             'breadcrumbs' => [
                 ['title' => 'Админка', 'url' => '/admin'],
                 ['title' => 'Настройки'],
@@ -33,6 +35,7 @@ final class SettingsController
         }
         // toggles
         SettingsService::set('bus_seat_selection_enabled', isset($data['bus_seat_selection_enabled']) ? '1' : '0');
+        SettingsService::set('sql_debug_enabled', isset($data['sql_debug_enabled']) ? '1' : '0');
 
         // handle uploads
         $files = $request->getUploadedFiles();

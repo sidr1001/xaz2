@@ -26,6 +26,28 @@
     <div class="content flex-fill p-4">
         {% include 'partials/breadcrumbs.twig' %}
         {% block content %}{% endblock %}
+        {% if settings.sql_debug_enabled == '1' and query_log is defined and query_log %}
+        <div class="card mt-4">
+            <div class="card-header">SQL Debug</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>#</th><th>ms</th><th>SQL</th><th>Params</th></tr></thead>
+                        <tbody>
+                        {% for q in query_log %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ '%.1f'|format(q.time_ms) }}</td>
+                            <td><code>{{ q.sql }}</code></td>
+                            <td><code>{{ q.params|json_encode(constant('JSON_UNESCAPED_UNICODE')) }}</code></td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

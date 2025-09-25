@@ -30,6 +30,8 @@ final class BookingsController
         $stmt->execute();
         $list = $stmt->fetchAll();
         $view = Twig::fromRequest($request);
+        $settings = \App\Service\SettingsService::getAll();
+        $queryLog = $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [];
         return $view->render($response, 'admin/bookings/index.twig', [
             'bookings' => $list,
             'filters'=>$q,
@@ -37,6 +39,8 @@ final class BookingsController
                 ['title' => 'Админка', 'url' => '/admin'],
                 ['title' => 'Заявки'],
             ],
+            'settings' => $settings,
+            'query_log' => $queryLog,
         ]);
     }
 
@@ -67,6 +71,8 @@ final class BookingsController
         }
 
         $view = Twig::fromRequest($request);
+        $settings = \App\Service\SettingsService::getAll();
+        $queryLog = $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [];
         return $view->render($response, 'admin/bookings/view.twig', [
             'booking' => $booking,
             'tourists' => $touristsList,
@@ -75,6 +81,8 @@ final class BookingsController
                 ['title' => 'Заявки', 'url' => '/admin/bookings'],
                 ['title' => 'Заявка #'.$id],
             ],
+            'settings' => $settings,
+            'query_log' => $queryLog,
         ]);
     }
 

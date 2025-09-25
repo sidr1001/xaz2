@@ -4,8 +4,8 @@
 <h1 class="mb-3">Мои заявки</h1>
 <form class="row g-2 mb-3" method="get">
   <div class="col-sm-2"><input class="form-control" name="id" value="{{ filters.id|e }}" placeholder="№ заявки"></div>
-  <div class="col-sm-3"><input class="form-control" name="created_range" value="{{ filters.created_from and filters.created_to ? (filters.created_from ~ ' - ' ~ filters.created_to) : '' }}" placeholder="Период создания (YYYY-MM-DD - YYYY-MM-DD)"></div>
-  <div class="col-sm-3"><input class="form-control" name="trip_range" value="{{ filters.trip_from and filters.trip_to ? (filters.trip_from ~ ' - ' ~ filters.trip_to) : '' }}" placeholder="Период поездки (YYYY-MM-DD - YYYY-MM-DD)"></div>
+  <div class="col-sm-3"><input class="form-control" name="created_range" value="{{ filters.created_from and filters.created_to ? (filters.created_from ~ ' - ' ~ filters.created_to) : '' }}" placeholder="Период создания"></div>
+  <div class="col-sm-3"><input class="form-control" name="trip_range" value="{{ filters.trip_from and filters.trip_to ? (filters.trip_from ~ ' - ' ~ filters.trip_to) : '' }}" placeholder="Период поездки"></div>
   <input type="hidden" name="created_from" value="{{ filters.created_from|e }}">
   <input type="hidden" name="created_to" value="{{ filters.created_to|e }}">
   <input type="hidden" name="trip_from" value="{{ filters.trip_from|e }}">
@@ -33,7 +33,7 @@
  </form>
 <div class="table-responsive">
   <table class="table table-striped align-middle">
-    <thead><tr><th>ID</th><th>Тур</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
+    <thead><tr><th>ID</th><th>Тур</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
     <tbody>
       {% for b in bookings %}
       <tr>
@@ -53,6 +53,7 @@
           <span class="badge bg-{{ pclass[pv]|default('secondary') }}">{{ pmap[pv]|default(pv) }}</span>
         </td>
         <td>{{ b.created_at|e }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/agent/bookings/{{ b.id }}">Открыть</a></td>
       </tr>
       {% else %}
       <tr><td colspan="6" class="text-center text-muted">Нет заявок</td></tr>

@@ -15,17 +15,21 @@ final class AgentsController
         $pdo = Database::getConnection();
         $agents = $pdo->query('SELECT * FROM agents ORDER BY created_at DESC')->fetchAll();
         $view = Twig::fromRequest($request);
+        $settings = \App\Service\SettingsService::getAll();
+        $queryLog = $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [];
         return $view->render($response, 'admin/agents/index.twig', ['agents' => $agents, 'breadcrumbs'=>[
             ['title'=>'Админка','url'=>'/admin'],['title'=>'Агенты']
-        ]]);
+        ], 'settings'=>$settings, 'query_log'=>$queryLog]);
     }
 
     public function create(Request $request, Response $response): Response
     {
         $view = Twig::fromRequest($request);
+        $settings = \App\Service\SettingsService::getAll();
+        $queryLog = $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [];
         return $view->render($response, 'admin/agents/form.twig', ['breadcrumbs'=>[
             ['title'=>'Админка','url'=>'/admin'],['title'=>'Агенты','url'=>'/admin/agents'],['title'=>'Добавить']
-        ]]);
+        ], 'settings'=>$settings, 'query_log'=>$queryLog]);
     }
 
     public function store(Request $request, Response $response): Response
@@ -59,9 +63,11 @@ final class AgentsController
         $contractPath = '/uploads/agents/'.(int)$args['id'].'/contract.pdf';
         $hasContract = is_file(dirname(__DIR__,3).'/public'.$contractPath);
         $view = Twig::fromRequest($request);
+        $settings = \App\Service\SettingsService::getAll();
+        $queryLog = $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [];
         return $view->render($response, 'admin/agents/form.twig', ['agent' => $agent, 'profile'=>$profile, 'contract_uploaded'=>$hasContract, 'contract_url'=>$hasContract ? $contractPath : null, 'breadcrumbs'=>[
             ['title'=>'Админка','url'=>'/admin'],['title'=>'Агенты','url'=>'/admin/agents'],['title'=>'Редактировать']
-        ]]);
+        ], 'settings'=>$settings, 'query_log'=>$queryLog]);
     }
 
     public function update(Request $request, Response $response, array $args): Response

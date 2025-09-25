@@ -31,6 +31,9 @@ final class SettingsService
         if (!isset($settings['operator_stamp_path'])) {
             $settings['operator_stamp_path'] = is_file(dirname(__DIR__,3).'/public/uploads/operator/stamp.png') ? '/uploads/operator/stamp.png' : null;
         }
+        if (!isset($settings['sql_debug_enabled'])) {
+            $settings['sql_debug_enabled'] = '0';
+        }
         return $settings;
     }
 
