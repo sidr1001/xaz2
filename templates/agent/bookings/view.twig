@@ -60,15 +60,7 @@
 
 <div id="docs" class="mt-3"></div>
 
-<div class="card mt-3">
-  <div class="card-body">
-    <h5 class="card-title">Комментарий агента</h5>
-    <form method="post" action="/agent/bookings/{{ booking.id }}/comment">
-      <textarea class="form-control mb-2" name="agent_comment" rows="3" placeholder="Ваш комментарий для админа...">{{ booking.agent_comment|default('')|e }}</textarea>
-      <button class="btn btn-primary btn-sm">Сохранить комментарий</button>
-    </form>
-  </div>
-  </div>
+{# duplicate comment block removed #}
 
 {% endblock %}
 
