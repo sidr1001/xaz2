@@ -69,7 +69,11 @@ final class ProfileController
             return $response->withHeader('Location', str_replace(dirname(__DIR__,3).'/public','',$file))->withStatus(302);
         }
         $out = dirname(__DIR__, 3)."/public/uploads/agents/$agentId/contract_generated.pdf";
-        PdfService::renderTemplateToFile($request, 'documents/agent_contract.twig', ['profile'=>$data], $out);
+        // Provide absolute FS paths for images to PDF renderer
+        $sigFs = dirname(__DIR__,3)."/public/uploads/agents/$agentId/signature.png";
+        $stampFs = dirname(__DIR__,3)."/public/uploads/agents/$agentId/stamp.png";
+        $tplData = ['profile'=>$data, 'signature_fs'=>$sigFs, 'stamp_fs'=>$stampFs];
+        PdfService::renderTemplateToFile($request, 'documents/agent_contract.twig', $tplData, $out);
         return $response->withHeader('Location', str_replace(dirname(__DIR__,3).'/public','',$out))->withStatus(302);
     }
 
