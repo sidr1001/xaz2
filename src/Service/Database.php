@@ -40,11 +40,7 @@ final class Database
 
     public static function logQuery(string $sql, array $params, float $ms): void
     {
-        // Only log when enabled
-        try {
-            $enabled = (Settings::get('sql_debug_enabled') === '1');
-        } catch (\Throwable $e) { $enabled = false; }
-        if (!$enabled) return;
+        // Always collect in memory; visibility is controlled at render time
         self::$queryLog[] = [
             'sql' => $sql,
             'params' => $params,
@@ -66,6 +62,10 @@ final class LoggedPDOStatement extends \PDOStatement
     protected function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
+        // For PDO::query(), statement is already executed upon construction. Log without timing.
+        try {
+            \App\Service\Database::logQuery($this->queryString, [], 0.0);
+        } catch (\Throwable $e) {}
     }
 
     public function execute($params = null): bool

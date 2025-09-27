@@ -14,6 +14,13 @@ final class DashboardController
     {
         $agentId = (int)($_SESSION['agent_id'] ?? 0);
         $pdo = Database::getConnection();
+        // Agent commission percent to adjust displayed prices
+        $agentCommissionPercent = 0.0;
+        try {
+            $stmtA = $pdo->prepare('SELECT agent_commission_percent FROM agents WHERE id=:id');
+            $stmtA->execute([':id' => $agentId]);
+            $agentCommissionPercent = (float)($stmtA->fetchColumn() ?: 0);
+        } catch (\Throwable $e) {}
 
         // Filters
         $q = $request->getQueryParams();
@@ -63,6 +70,7 @@ final class DashboardController
             'breadcrumbs' => [
                 ['title' => 'Кабинет агента']
             ],
+            'agentCommissionPercent' => $agentCommissionPercent,
         ]);
     }
 }

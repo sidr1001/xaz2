@@ -14,6 +14,10 @@
         <label class="form-label">Пароль</label>
         <input class="form-control" name="password" required value="{{ agent.password|default('')|e }}">
     </div>
+    <div class="col-md-6">
+        <label class="form-label">% агентского вознаграждения</label>
+        <input class="form-control" type="number" step="0.01" name="agent_commission_percent" value="{{ agent.agent_commission_percent|default('0')|e }}">
+    </div>
     <div class="col-12">
         <label class="form-label">Права (JSON или текст)</label>
         <textarea class="form-control" name="permissions" rows="4">{{ agent.permissions|default('')|e }}</textarea>

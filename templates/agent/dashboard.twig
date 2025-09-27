@@ -64,7 +64,8 @@
         <div class="small text-muted mb-2">{{ tour.start_date|e }} — {{ tour.end_date|e }}</div>
         <p class="card-text">{{ tour.description|striptags|slice(0,140) ~ (tour.description|length>140 ? '…' : '') }}</p>
         <div class="d-flex justify-content-between align-items-center">
-          <strong>{{ tour.price|e }} ₽</strong>
+          {% set final = tour.price * (1 - (agentCommissionPercent|default(0)/100)) %}
+          <strong>{{ final|number_format(2, '.', ' ') }} ₽</strong>
           <a href="/agent/tours/{{ tour.id }}/book" class="btn btn-primary btn-sm">Создать заявку</a>
         </div>
       </div>

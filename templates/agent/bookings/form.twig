@@ -7,7 +7,7 @@
   <div class="col-md-4"><input class="form-control" name="customer_name" placeholder="Имя" required></div>
   <div class="col-md-4"><input class="form-control" name="customer_phone" placeholder="Телефон" required></div>
   <div class="col-md-4"><input class="form-control" type="email" name="customer_email" placeholder="Email" required></div>
-  <div class="col-md-3"><input class="form-control" type="number" step="0.01" name="total_amount" placeholder="Сумма" required></div>
+  <div class="col-md-3"><input class="form-control" type="number" step="0.01" name="total_amount" id="total_amount" placeholder="Сумма" required readonly></div>
   <div class="col-12"><h5>Туристы</h5></div>
   <div class="col-12" id="tlist"></div>
   <div class="col-12"><button type="button" id="addT" class="btn btn-outline-primary btn-sm">Добавить туриста</button></div>
@@ -83,17 +83,20 @@ $(function(){
   });
 
   // Bus seat selection (simple 4x10 grid example)
+  let tourPrice = 0;
   function loadTour() {
     const tourId = $('input[name="tour_id"]').val();
     if(!tourId) return;
     $.get('/tour/'+tourId, { ajax: 'meta' }, function(resp){
       if(!resp || !resp.ok) return;
+      tourPrice = resp.price || 0;
       if(resp.tour_type === 'bus' && resp.seat_enabled === true){
         $('#bus-seats').removeClass('d-none');
         renderSeatGrid(resp.seats || 40, resp.taken || []);
       } else {
         $('#bus-seats').addClass('d-none');
       }
+      recalcTotal();
     });
   }
   function renderSeatGrid(total, taken){
@@ -112,7 +115,9 @@ $(function(){
     }
     $grid.off('click').on('click', 'button', function(){
       const s = $(this).data('seat');
+      const maxSel = $('.card.p-3.mb-2.tourist').length;
       if($(this).hasClass('btn-outline-primary')){
+        if(selected.size >= maxSel){ return; }
         $(this).removeClass('btn-outline-primary').addClass('btn-primary');
         selected.add(s);
       } else if($(this).hasClass('btn-primary')){
@@ -122,6 +127,21 @@ $(function(){
       $('#bus_seats_input').val(Array.from(selected).join(','));
     });
   }
+  function recalcTotal(){
+    const cnt = $('#tlist .card.p-3.mb-2').length;
+    const total = (tourPrice||0) * (cnt||0);
+    $('#total_amount').val(total.toFixed(2));
+  }
+  $('#addT').on('click', recalcTotal);
+  $('#tlist').on('click', '.js-remove', recalcTotal);
+  // Inject remove buttons into agent form tourists
+  $('#tlist').on('DOMNodeInserted', function(e){
+    const $card = $(e.target).closest('.card');
+    if($card.length && $card.find('.js-remove').length===0){
+      const $btn = $('<div class="mt-2"><button type="button" class="btn btn-outline-danger btn-sm js-remove">Удалить</button></div>');
+      $card.find('.row.g-2').append($btn);
+    }
+  });
   loadTour();
 })
 </script>

@@ -182,7 +182,7 @@ final class BookingsController
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        return $response->withHeader('Location', '/agent/bookings')->withStatus(302);
+        return $response->withHeader('Location', '/agent/bookings/'.$bookingId)->withStatus(302);
     }
 }
 

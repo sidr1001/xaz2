@@ -46,6 +46,10 @@
         </select>
     </div>
     <div class="col-md-3">
+        <label class="form-label">Мест в автобусе (если автобус)</label>
+        <input type="number" class="form-control" name="bus_seats_total" value="{{ tour.bus_seats_total|default('40')|e }}">
+    </div>
+    <div class="col-md-3">
         <label class="form-label">Длительность (дней)</label>
         <input type="number" class="form-control" name="duration_days" value="{{ tour.duration_days|default('')|e }}">
     </div>

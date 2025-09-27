@@ -7,6 +7,15 @@ use PDO;
 
 final class SettingsService
 {
+    public static function get(string $key, ?string $default = null): ?string
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT `value` FROM settings WHERE `key`=:k LIMIT 1');
+        $stmt->execute([':k'=>$key]);
+        $v = $stmt->fetchColumn();
+        if ($v === false || $v === null) { return $default; }
+        return (string)$v;
+    }
     public static function getAll(): array
     {
         $pdo = Database::getConnection();

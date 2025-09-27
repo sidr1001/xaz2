@@ -53,7 +53,7 @@ final class ToursController
         $departureCity = $departureCity !== '' ? $departureCity : null;
         $tourType = $data['tour_type'] ?? null;
 
-        $stmt = $pdo->prepare('INSERT INTO tours(title, description, city, region, country, price, start_date, end_date, tour_type, duration_days, departure_city, image, created_at) VALUES(:title, :description, :city, :region, :country, :price, :start_date, :end_date, :tour_type, :duration_days, :departure_city, :image, NOW())');
+        $stmt = $pdo->prepare('INSERT INTO tours(title, description, city, region, country, price, start_date, end_date, tour_type, duration_days, departure_city, bus_seats_total, image, created_at) VALUES(:title, :description, :city, :region, :country, :price, :start_date, :end_date, :tour_type, :duration_days, :departure_city, :bus_seats_total, :image, NOW())');
         $stmt->execute([
             ':title' => trim((string)($data['title'] ?? '')),
             ':description' => (string)($data['description'] ?? ''),
@@ -67,6 +67,7 @@ final class ToursController
             ':duration_days' => $duration,
             ':departure_city' => $departureCity,
             ':image' => $imagePath,
+            ':bus_seats_total' => (int)($data['bus_seats_total'] ?? 40),
         ]);
 
         // multiple images
@@ -124,7 +125,7 @@ final class ToursController
         $departureCity = $departureCity !== '' ? $departureCity : null;
         $tourType = $data['tour_type'] ?? null;
 
-        $stmt = $pdo->prepare('UPDATE tours SET title=:title, description=:description, city=:city, region=:region, country=:country, price=:price, start_date=:start_date, end_date=:end_date, tour_type=:tour_type, duration_days=:duration_days, departure_city=:departure_city' . ($imagePath ? ', image=:image' : '') . ' WHERE id=:id');
+        $stmt = $pdo->prepare('UPDATE tours SET title=:title, description=:description, city=:city, region=:region, country=:country, price=:price, start_date=:start_date, end_date=:end_date, tour_type=:tour_type, duration_days=:duration_days, departure_city=:departure_city, bus_seats_total=:bus_seats_total' . ($imagePath ? ', image=:image' : '') . ' WHERE id=:id');
         $params = [
             ':title' => trim((string)($data['title'] ?? '')),
             ':description' => (string)($data['description'] ?? ''),
@@ -137,6 +138,7 @@ final class ToursController
             ':tour_type' => $tourType,
             ':duration_days' => $duration,
             ':departure_city' => $departureCity,
+            ':bus_seats_total' => (int)($data['bus_seats_total'] ?? 40),
             ':id' => $id,
         ];
         if ($imagePath) {

@@ -57,12 +57,24 @@ $(function(){
   }
   let idx = 0;
   $('#add-tourist').on('click', function(){
-    $('#tourists-list').append(tmpl(idx++));
+    $('#tourists-list').append(tmpl(idx++)); calcTotal();
   }).click();
 
   $('#tourists-list').on('click', '.js-remove', function(){
-    $(this).closest('.tourist').remove();
+    $(this).closest('.tourist').remove(); calcTotal();
   });
+
+  let tourPrice = 0;
+  function loadTour(){
+    const tourId = $('input[name="tour_id"]').val();
+    $.get('/tour/'+tourId, { ajax: 'meta' }, function(resp){ tourPrice = resp && resp.price ? parseFloat(resp.price) : 0; calcTotal(); });
+  }
+  function calcTotal(){
+    const cnt = $('#tourists-list .tourist').length;
+    const total = (tourPrice||0) * (cnt||0);
+    $('input[name="total_amount"]').val(total.toFixed(2));
+  }
+  loadTour();
 
   $('#booking-form').on('submit', function(e){
     e.preventDefault();
@@ -73,9 +85,7 @@ $(function(){
       data: form.serialize(),
       success: function(resp){
         if(resp.ok){
-          $('#alert').removeClass('d-none alert-danger').addClass('alert-success').text('Заявка отправлена! ID ' + resp.booking_id);
-          form.trigger('reset');
-          $('#tourists-list').empty();
+          window.location.href = resp.redirect || ('/agent/bookings/' + resp.booking_id);
         } else {
           $('#alert').removeClass('d-none alert-success').addClass('alert-danger').text(resp.error || 'Ошибка');
         }

@@ -36,11 +36,12 @@ final class AgentsController
     {
         $data = (array)$request->getParsedBody();
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('INSERT INTO agents(login, password, permissions, created_at) VALUES(:login, :password, :permissions, NOW())');
+        $stmt = $pdo->prepare('INSERT INTO agents(login, password, permissions, agent_commission_percent, created_at) VALUES(:login, :password, :permissions, :acp, NOW())');
         $stmt->execute([
             ':login' => trim((string)($data['login'] ?? '')),
             ':password' => trim((string)($data['password'] ?? '')),
             ':permissions' => trim((string)($data['permissions'] ?? '')),
+            ':acp' => (float)($data['agent_commission_percent'] ?? 0),
         ]);
         return $response->withHeader('Location', '/admin/agents')->withStatus(302);
     }
@@ -75,11 +76,12 @@ final class AgentsController
         $id = (int)$args['id'];
         $data = (array)$request->getParsedBody();
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('UPDATE agents SET login=:login, password=:password, permissions=:permissions WHERE id=:id');
+        $stmt = $pdo->prepare('UPDATE agents SET login=:login, password=:password, permissions=:permissions, agent_commission_percent=:acp WHERE id=:id');
         $stmt->execute([
             ':login' => trim((string)($data['login'] ?? '')),
             ':password' => trim((string)($data['password'] ?? '')),
             ':permissions' => trim((string)($data['permissions'] ?? '')),
+            ':acp' => (float)($data['agent_commission_percent'] ?? 0),
             ':id' => $id,
         ]);
         return $response->withHeader('Location', '/admin/agents')->withStatus(302);

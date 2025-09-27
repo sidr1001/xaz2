@@ -38,12 +38,17 @@ final class TourController
                     // Column may not exist; ignore
                 }
             }
+            $seatsTotal = 40;
+            if (isset($tour['bus_seats_total']) && (int)$tour['bus_seats_total'] > 0) {
+                $seatsTotal = (int)$tour['bus_seats_total'];
+            }
             $payload = [
                 'ok' => true,
                 'tour_type' => $tour['tour_type'] ?? null,
                 'seat_enabled' => $enabled,
-                'seats' => 40,
+                'seats' => $seatsTotal,
                 'taken' => array_keys($taken),
+                'price' => isset($tour['price']) ? (float)$tour['price'] : null,
             ];
             $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE));
             return $response->withHeader('Content-Type', 'application/json');
