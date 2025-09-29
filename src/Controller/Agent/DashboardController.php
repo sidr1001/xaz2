@@ -48,6 +48,15 @@ final class DashboardController
         $tours = $stmt->fetchAll();
         $total = (int)$pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
 
+        // Seats taken per tour
+        $takenMap = [];
+        try {
+            $q = $pdo->query('SELECT tour_id, COUNT(*) AS c FROM booking_seats GROUP BY tour_id');
+            foreach ($q->fetchAll() as $row) {
+                $takenMap[(int)$row['tour_id']] = (int)$row['c'];
+            }
+        } catch (\Throwable $e) {}
+
         // Filter value sources (disable if none)
         $vals = [
             'countries' => $pdo->query('SELECT DISTINCT country FROM tours WHERE country IS NOT NULL AND country<>"" ORDER BY country')->fetchAll(\PDO::FETCH_COLUMN),
@@ -71,6 +80,7 @@ final class DashboardController
                 ['title' => 'Кабинет агента']
             ],
             'agentCommissionPercent' => $agentCommissionPercent,
+            'seatsTakenMap' => $takenMap,
         ]);
     }
 }

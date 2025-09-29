@@ -31,6 +31,8 @@ final class BookingsController
         foreach ($p as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();
         $list = $stmt->fetchAll();
+        // log agent filters into SQL Debug
+        try { \App\Service\Database::logQuery($sql, $p, 0.0); } catch (\Throwable $e) {}
         $view = Twig::fromRequest($request);
         return $view->render($response, 'agent/bookings/index.twig', [
             'bookings' => $list,
@@ -39,6 +41,7 @@ final class BookingsController
                 ['title' => 'Кабинет агента', 'url' => '/agent'],
                 ['title' => 'Заявки'],
             ],
+            'agentCommissionPercent' => (float)($pdo->query('SELECT agent_commission_percent FROM agents WHERE id='.(int)$agentId)->fetchColumn() ?: 0),
         ]);
     }
 
@@ -50,6 +53,14 @@ final class BookingsController
         $stmt = $pdo->prepare('SELECT b.*, t.title AS tour_title FROM bookings b LEFT JOIN tours t ON t.id=b.tour_id WHERE b.id=:id AND b.agent_id=:a');
         $stmt->execute([':id' => $id, ':a' => $agentId]);
         $booking = $stmt->fetch();
+        // Pull seats from booking_seats
+        if ($booking) {
+            try {
+                $ss = $pdo->prepare('SELECT seat_number FROM booking_seats WHERE booking_id=:b ORDER BY seat_number');
+                $ss->execute([':b'=>$id]);
+                $booking['seats'] = array_map('intval', array_column($ss->fetchAll(), 'seat_number'));
+            } catch (\Throwable $e) {}
+        }
         if (!$booking) {
             $view = Twig::fromRequest($request);
             return $view->render($response->withStatus(404), '404.twig');

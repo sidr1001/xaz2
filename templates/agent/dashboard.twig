@@ -63,15 +63,14 @@
         <div class="small text-muted mb-1">{{ tour.country|e }} {{ tour.region ? '• ' ~ tour.region : '' }} {{ tour.city ? '• ' ~ tour.city : '' }}</div>
         <div class="small text-muted mb-2">{{ tour.start_date|e }} — {{ tour.end_date|e }}</div>
         {% if tour.tour_type=='bus' and tour.bus_seats_total is defined %}
-          {% set taken = 0 %}
-          {# taken count will be computed server-side for accuracy in a report later; display seats total for now #}
-          <div class="small">Мест в автобусе: {{ tour.bus_seats_total }}</div>
+          {% set taken = seatsTakenMap[tour.id]|default(0) %}
+          <div class="small">Мест в автобусе: {{ taken }}/{{ tour.bus_seats_total }}</div>
         {% endif %}
         <p class="card-text">{{ tour.description|striptags|slice(0,140) ~ (tour.description|length>140 ? '…' : '') }}</p>
         <div class="d-flex justify-content-between align-items-center">
-          {% set final = tour.price * (1 - (agentCommissionPercent|default(0)/100)) %}
+          {% set final = tour.price * (1 - (agentCommissionPercent|default(0)/100.0)) %}
           <strong>{{ final|number_format(2, '.', ' ') }} ₽</strong>
-          {% set busFull = (tour.tour_type=='bus' and tour.bus_seats_total is defined and tour.bus_seats_total|int <= 0) %}
+          {% set busFull = (tour.tour_type=='bus' and tour.bus_seats_total is defined and (seatsTakenMap[tour.id]|default(0)) >= tour.bus_seats_total) %}
           {% if busFull %}
             <span class="badge bg-secondary">Автобус заполнен</span>
           {% else %}

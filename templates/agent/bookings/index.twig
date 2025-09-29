@@ -40,7 +40,8 @@
         <td>{{ b.id }}</td>
         <td>{{ b.tour_title|e }}</td>
         <td>{{ b.customer_name|e }}</td>
-        <td>{{ b.total_amount|e }}</td>
+        {% set final = (b.total_amount|default(0)) * (1 - (agentCommissionPercent|default(0)/100.0)) %}
+        <td>{{ final|number_format(2, '.', ' ') }}</td>
         <td>
           {% set omap = {'new':'Новая','in_progress':'В работе','paid':'Оплачен','cancel_request':'Запрос на аннуляцию','cancelled':'Аннуляция','waitlist':'Лист ожидания','confirmed':'Подтвержден','rejected':'Отказ','on_request':'Под запрос'} %}
           {% set oclass = {'new':'secondary','in_progress':'info','paid':'success','cancel_request':'warning','cancelled':'dark','waitlist':'secondary','confirmed':'primary','rejected':'danger','on_request':'warning'} %}
