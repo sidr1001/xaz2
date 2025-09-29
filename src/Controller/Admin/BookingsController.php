@@ -28,6 +28,8 @@ final class BookingsController
         $stmt = $pdo->prepare($sql);
         foreach($p as $k=>$v){ $stmt->bindValue($k,$v); }
         $stmt->execute();
+        // Explicitly record this filtered query in SQL Debug log
+        try { \App\Service\Database::logQuery($sql, $p, 0.0); } catch (\Throwable $e) {}
         $list = $stmt->fetchAll();
         $view = Twig::fromRequest($request);
         $settings = \App\Service\SettingsService::getAll();
