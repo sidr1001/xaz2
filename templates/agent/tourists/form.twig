@@ -44,5 +44,25 @@
   <div class="text-muted">Файлы не загружены</div>
   {% endfor %}
 </div>
+
+<hr>
+<h5 class="mb-2">Заявки/Туры этого туриста</h5>
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead><tr><th>Заявка</th><th>Тур</th><th>Даты</th><th></th></tr></thead>
+    <tbody>
+      {% for r in related %}
+      <tr>
+        <td>#{{ r.booking_id }}</td>
+        <td>{{ r.tour_title|e }}</td>
+        <td>{{ r.start_date|e }} — {{ r.end_date|e }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/agent/bookings/{{ r.booking_id }}">Открыть</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="text-center text-muted">Других заявок не найдено</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
 {% endblock %}
 

@@ -54,10 +54,23 @@ final class TouristsController
         $t = $stmt->fetch();
         if(!$t){ $view = Twig::fromRequest($request); return $view->render($response->withStatus(404), '404.twig'); }
         $files = self::listFiles($id);
+        // Related bookings/tours for same person (dedup by booking_id)
+        $related = [];
+        try {
+            $q = $pdo->prepare('SELECT DISTINCT b.id AS booking_id, tt2.id AS tourist_id, tr.title AS tour_title, tr.start_date, tr.end_date
+                                 FROM tourists tt2
+                                 INNER JOIN bookings b ON b.id=tt2.booking_id
+                                 INNER JOIN tours tr ON tr.id=b.tour_id
+                                 WHERE b.agent_id=:a AND tt2.full_name=:n AND COALESCE(tt2.birth_date, "")=COALESCE(:bd, "") AND COALESCE(tt2.passport, "")=COALESCE(:pp, "")
+                                 ORDER BY b.created_at DESC');
+            $q->execute([':a'=>$agentId, ':n'=>(string)($t['full_name']??''), ':bd'=>$t['birth_date']??null, ':pp'=>(string)($t['passport']??'')]);
+            $related = $q->fetchAll();
+        } catch (\Throwable $e) {}
         $view = Twig::fromRequest($request);
         return $view->render($response, 'agent/tourists/form.twig', [
             't'=>$t,
             'files'=>$files,
+            'related'=>$related,
             'breadcrumbs' => [
                 ['title' => 'Кабинет агента', 'url' => '/agent'],
                 ['title' => 'Туристы', 'url' => '/agent/tourists'],
