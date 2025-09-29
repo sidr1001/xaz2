@@ -24,13 +24,13 @@
 <script>
 $(function(){
   function t(i){
-    return `<div class=\"card p-3 mb-2\">
-      <div class=\"row g-2\">
-        <div class=\"col-md-4\"><input class=\"form-control\" name=\"tourists[${i}][full_name]\" placeholder=\"ФИО\" required></div>
-        <div class=\"col-md-2\"><input class=\"form-control\" type=\"date\" name=\"tourists[${i}][birth_date]\"></div>
-        <div class=\"col-md-3\"><input class=\"form-control\" name=\"tourists[${i}][passport]\" placeholder=\"Паспорт\"></div>
-        <div class=\"col-md-2\"><input class=\"form-control\" name=\"tourists[${i}][phone]\" placeholder=\"Телефон\"></div>
-        <div class=\"col-md-3 mt-2\"><input class=\"form-control\" name=\"tourists[${i}][email]\" placeholder=\"Email\"></div>
+    return `<div class="card p-3 mb-2">
+      <div class="row g-2">
+        <div class="col-md-4"><input class="form-control" name="tourists[${i}][full_name]" placeholder="ФИО" required></div>
+        <div class="col-md-2"><input class="form-control" type="date" name="tourists[${i}][birth_date]"></div>
+        <div class="col-md-3"><input class="form-control" name="tourists[${i}][passport]" placeholder="Паспорт"></div>
+        <div class="col-md-2"><input class="form-control" name="tourists[${i}][phone]" placeholder="Телефон"></div>
+        <div class="col-md-3 mt-2"><input class="form-control" name="tourists[${i}][email]" placeholder="Email"></div>
       </div>
     </div>`
   }
@@ -82,7 +82,7 @@ $(function(){
     $(this).parent().hide().empty();
   });
 
-  // Bus seat selection (simple 4x10 grid example)
+  // Bus seat selection
   let tourPrice = 0;
   function loadTour() {
     const tourId = $('input[name="tour_id"]').val();
@@ -115,9 +115,9 @@ $(function(){
     }
     $grid.off('click').on('click', 'button', function(){
       const s = $(this).data('seat');
-      const maxSel = $('.card.p-3.mb-2.tourist').length;
+      const maxSel = $('#tlist .card.p-3.mb-2').length;
       if($(this).hasClass('btn-outline-primary')){
-        if(selected.size >= maxSel){ return; }
+        if(selected.size >= maxSel){ toastr.warning('Количество мест не может превышать число туристов'); return; }
         $(this).removeClass('btn-outline-primary').addClass('btn-primary');
         selected.add(s);
       } else if($(this).hasClass('btn-primary')){
@@ -133,7 +133,7 @@ $(function(){
     $('#total_amount').val(total.toFixed(2));
   }
   $('#addT').on('click', recalcTotal);
-  $('#tlist').on('click', '.js-remove', recalcTotal);
+  $('#tlist').on('click', '.js-remove', function(){ $(this).closest('.card').remove(); recalcTotal(); toastr.info('Турист удален'); });
   // Inject remove buttons into agent form tourists
   $('#tlist').on('DOMNodeInserted', function(e){
     const $card = $(e.target).closest('.card');
@@ -143,7 +143,7 @@ $(function(){
     }
   });
   loadTour();
-})
+});
 </script>
 {% endblock %}
 

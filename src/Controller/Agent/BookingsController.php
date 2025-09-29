@@ -137,11 +137,42 @@ final class BookingsController
     {
         $data = (array)$request->getParsedBody();
         $pdo = Database::getConnection();
+        // Validate bus seats if bus tour enabled
+        $tourId = (int)($data['tour_id'] ?? 0);
+        $meta = $pdo->prepare('SELECT tour_type, COALESCE(bus_seats_total,40) AS seats FROM tours WHERE id=:id');
+        $meta->execute([':id'=>$tourId]);
+        $tourMeta = $meta->fetch() ?: [];
+        $isBus = ($tourMeta['tour_type'] ?? null) === 'bus';
+        $seatsTotal = (int)($tourMeta['seats'] ?? 40);
+        $taken = [];
+        if ($isBus) {
+            try {
+                $q = $pdo->prepare('SELECT bus_seats FROM bookings WHERE tour_id=:tid AND COALESCE(bus_seats, "") <> ""');
+                $q->execute([':tid'=>$tourId]);
+                foreach($q->fetchAll() as $row){
+                    foreach (explode(',', (string)$row['bus_seats']) as $s) { $s=(int)trim($s); if($s>0){ $taken[$s]=true; } }
+                }
+            } catch (\Throwable $e) {}
+        }
+        $busSeatsStr = trim((string)($data['bus_seats'] ?? ''));
+        $tourists = $data['tourists'] ?? [];
+        if ($isBus) {
+            $selected = array_values(array_filter(array_map(fn($x)=>(int)trim($x), explode(',', $busSeatsStr)), fn($x)=>$x>0));
+            $selected = array_unique($selected);
+            if (count($selected) !== count($tourists)) {
+                return $response->withHeader('Location', '/agent/tours/'.$tourId.'/book?error=seats_mismatch')->withStatus(302);
+            }
+            if (count($selected) > $seatsTotal) {
+                return $response->withHeader('Location', '/agent/tours/'.$tourId.'/book?error=bus_full')->withStatus(302);
+            }
+            foreach ($selected as $s) { if (isset($taken[$s])) { return $response->withHeader('Location', '/agent/tours/'.$tourId.'/book?error=seat_taken')->withStatus(302); } }
+        }
+
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO bookings(tour_id, agent_id, customer_name, customer_phone, customer_email, order_status, payment_status, total_amount, created_at) VALUES(:tour_id, :agent_id, :name, :phone, :email, :order_status, :payment_status, :amount, NOW())');
+            $stmt = $pdo->prepare('INSERT INTO bookings(tour_id, agent_id, customer_name, customer_phone, customer_email, order_status, payment_status, total_amount, created_at, bus_seats) VALUES(:tour_id, :agent_id, :name, :phone, :email, :order_status, :payment_status, :amount, NOW(), :bus_seats)');
             $stmt->execute([
-                ':tour_id' => (int)($data['tour_id'] ?? 0),
+                ':tour_id' => $tourId,
                 ':agent_id' => (int)($_SESSION['agent_id'] ?? 0),
                 ':name' => trim((string)($data['customer_name'] ?? '')),
                 ':phone' => trim((string)($data['customer_phone'] ?? '')),
@@ -149,22 +180,12 @@ final class BookingsController
                 ':order_status' => 'new',
                 ':payment_status' => 'unpaid',
                 ':amount' => (float)($data['total_amount'] ?? 0),
+                ':bus_seats' => $isBus ? $busSeatsStr : null,
             ]);
             $bookingId = (int)$pdo->lastInsertId();
 
-            // Save bus seats if provided (optional column bookings.bus_seats)
-            $busSeats = trim((string)($data['bus_seats'] ?? ''));
-            if ($busSeats !== '') {
-                try {
-                    $pdo->prepare('UPDATE bookings SET bus_seats=:s WHERE id=:id')->execute([':s' => $busSeats, ':id' => $bookingId]);
-                } catch (\Throwable $e) {
-                    // Ignore if column doesn't exist
-                }
-            }
-
-            $tourists = $data['tourists'] ?? [];
             $stmtT = $pdo->prepare('INSERT INTO tourists(booking_id, full_name, birth_date, passport, phone, email) VALUES(:b,:n,:d,:p,:ph,:e)');
-            foreach ($tourists as $t) {
+            foreach ((array)$tourists as $t) {
                 $stmtT->execute([
                     ':b' => $bookingId,
                     ':n' => trim((string)($t['full_name'] ?? '')),
@@ -178,8 +199,7 @@ final class BookingsController
             $pdo->commit();
         } catch (\Throwable $e) {
             $pdo->rollBack();
-            $response->getBody()->write(json_encode(['ok' => false, 'error' => $e->getMessage()], JSON_UNESCAPED_UNICODE));
-            return $response->withHeader('Content-Type', 'application/json');
+            return $response->withHeader('Location', '/agent/tours/'.$tourId.'/book?error=server')->withStatus(302);
         }
 
         return $response->withHeader('Location', '/agent/bookings/'.$bookingId)->withStatus(302);
