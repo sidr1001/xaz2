@@ -215,10 +215,12 @@ final class BookingsController
             $pdo->commit();
         } catch (\Throwable $e) {
             $pdo->rollBack();
-            return $response->withHeader('Location', '/agent/tours/'.$tourId.'/book?error=server')->withStatus(302);
+            $response->getBody()->write(json_encode(['ok'=>false,'error'=>'Ошибка сохранения'], JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type','application/json');
         }
 
-        return $response->withHeader('Location', '/agent/bookings/'.$bookingId)->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'booking_id'=>$bookingId], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 }
 

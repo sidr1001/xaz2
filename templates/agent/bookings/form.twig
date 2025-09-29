@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1 class="mb-3">Создать заявку</h1>
-<form method="post" action="/agent/bookings/store" class="row g-3">
+<form id="agent-booking-form" class="row g-3">
   <input type="hidden" name="tour_id" value="{{ tour_id }}" />
   <div class="col-md-4"><input class="form-control" name="customer_name" placeholder="Имя" required></div>
   <div class="col-md-4"><input class="form-control" name="customer_phone" placeholder="Телефон" required></div>
@@ -16,7 +16,7 @@
     <div id="seat-grid" class="d-flex flex-wrap" style="max-width: 520px"></div>
     <input type="hidden" name="bus_seats" id="bus_seats_input" />
   </div>
-  <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
+  <div class="col-12"><button id="saveBtn" class="btn btn-primary" disabled>Сохранить</button></div>
 </form>
 {% endblock %}
 
@@ -125,12 +125,14 @@ $(function(){
         selected.delete(s);
       }
       $('#bus_seats_input').val(Array.from(selected).join(','));
+      toggleSave();
     });
   }
   function recalcTotal(){
     const cnt = $('#tlist .card.p-3.mb-2').length;
     const total = (tourPrice||0) * (cnt||0);
     $('#total_amount').val(total.toFixed(2));
+    toggleSave();
   }
   $('#addT').on('click', recalcTotal);
   $('#tlist').on('click', '.js-remove', function(){ $(this).closest('.card').remove(); recalcTotal(); toastr.info('Турист удален'); });
@@ -143,6 +145,31 @@ $(function(){
     }
   });
   loadTour();
+
+  function toggleSave(){
+    const cnt = $('#tlist .card.p-3.mb-2').length;
+    const seats = ($('#bus_seats_input').val()||'').split(',').filter(Boolean);
+    const enabled = (!$('#bus-seats').is(':visible')) || (seats.length === cnt && cnt>0);
+    $('#saveBtn').prop('disabled', !enabled);
+  }
+
+  $('#agent-booking-form').on('submit', function(e){
+    e.preventDefault();
+    const cnt = $('#tlist .card.p-3.mb-2').length;
+    const seats = ($('#bus_seats_input').val()||'').split(',').filter(Boolean);
+    if($('#bus-seats').is(':visible') && seats.length !== cnt){ toastr.error('Выберите места для каждого туриста'); return; }
+    const form = $(this);
+    $.ajax({
+      url: '/agent/bookings/store',
+      method: 'POST',
+      data: form.serialize(),
+      success: function(resp){
+        if(resp && resp.ok){ toastr.success('Заявка создана'); window.location.href = '/agent/bookings/'+resp.booking_id; }
+        else { toastr.error((resp && resp.error) ? resp.error : 'Ошибка'); }
+      },
+      error: function(xhr){ toastr.error('Ошибка сервера: '+xhr.status); }
+    });
+  });
 });
 </script>
 {% endblock %}

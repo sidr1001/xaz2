@@ -71,7 +71,7 @@ final class BookingController
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $response->getBody()->write(json_encode(['ok' => true, 'booking_id' => $bookingId, 'redirect' => '/agent/bookings/'.$bookingId]));
+        $response->getBody()->write(json_encode(['ok' => true, 'booking_id' => $bookingId], JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }
