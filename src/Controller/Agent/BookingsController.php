@@ -147,11 +147,9 @@ final class BookingsController
         $taken = [];
         if ($isBus) {
             try {
-                $q = $pdo->prepare('SELECT bus_seats FROM bookings WHERE tour_id=:tid AND COALESCE(bus_seats, "") <> ""');
+                $q = $pdo->prepare('SELECT seat_number FROM booking_seats WHERE tour_id=:tid');
                 $q->execute([':tid'=>$tourId]);
-                foreach($q->fetchAll() as $row){
-                    foreach (explode(',', (string)$row['bus_seats']) as $s) { $s=(int)trim($s); if($s>0){ $taken[$s]=true; } }
-                }
+                foreach($q->fetchAll() as $row){ $s=(int)($row['seat_number']??0); if($s>0){ $taken[$s]=true; } }
             } catch (\Throwable $e) {}
         }
         $busSeatsStr = trim((string)($data['bus_seats'] ?? ''));
@@ -170,7 +168,7 @@ final class BookingsController
 
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO bookings(tour_id, agent_id, customer_name, customer_phone, customer_email, order_status, payment_status, total_amount, created_at, bus_seats) VALUES(:tour_id, :agent_id, :name, :phone, :email, :order_status, :payment_status, :amount, NOW(), :bus_seats)');
+            $stmt = $pdo->prepare('INSERT INTO bookings(tour_id, agent_id, customer_name, customer_phone, customer_email, order_status, payment_status, total_amount, created_at) VALUES(:tour_id, :agent_id, :name, :phone, :email, :order_status, :payment_status, :amount, NOW())');
             $stmt->execute([
                 ':tour_id' => $tourId,
                 ':agent_id' => (int)($_SESSION['agent_id'] ?? 0),
@@ -180,9 +178,16 @@ final class BookingsController
                 ':order_status' => 'new',
                 ':payment_status' => 'unpaid',
                 ':amount' => (float)($data['total_amount'] ?? 0),
-                ':bus_seats' => $isBus ? $busSeatsStr : null,
             ]);
             $bookingId = (int)$pdo->lastInsertId();
+
+            // Persist each selected seat in booking_seats table
+            if ($isBus) {
+                $ins = $pdo->prepare('INSERT INTO booking_seats(booking_id, tour_id, seat_number) VALUES(:b,:t,:s)');
+                foreach (array_unique(array_map('intval', array_filter(explode(',', $busSeatsStr)))) as $s) {
+                    $ins->execute([':b'=>$bookingId, ':t'=>$tourId, ':s'=>$s]);
+                }
+            }
 
             $stmtT = $pdo->prepare('INSERT INTO tourists(booking_id, full_name, birth_date, passport, phone, email) VALUES(:b,:n,:d,:p,:ph,:e)');
             foreach ((array)$tourists as $t) {

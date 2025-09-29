@@ -26,16 +26,14 @@ final class TourController
             $taken = [];
             if ($enabled && ($tour['tour_type'] ?? null) === 'bus') {
                 try {
-                    $stmt2 = $pdo->prepare('SELECT bus_seats FROM bookings WHERE tour_id=:tid AND COALESCE(bus_seats, "") <> ""');
+                    $stmt2 = $pdo->prepare('SELECT seat_number FROM booking_seats WHERE tour_id=:tid');
                     $stmt2->execute([':tid' => (int)$tour['id']]);
                     foreach ($stmt2->fetchAll() as $row) {
-                        foreach (explode(',', (string)$row['bus_seats']) as $s) {
-                            $s = (int)trim($s);
-                            if ($s > 0) { $taken[$s] = true; }
-                        }
+                        $s = (int)($row['seat_number'] ?? 0);
+                        if ($s > 0) { $taken[$s] = true; }
                     }
                 } catch (\Throwable $e) {
-                    // Column may not exist; ignore
+                    // If table doesn't exist yet, ignore
                 }
             }
             $seatsTotal = 40;
