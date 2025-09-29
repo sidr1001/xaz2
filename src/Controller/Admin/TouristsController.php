@@ -13,7 +13,7 @@ final class TouristsController
     public function index(Request $request, Response $response): Response
     {
         $pdo = Database::getConnection();
-        $list = $pdo->query('SELECT * FROM tourists ORDER BY created_at DESC')->fetchAll();
+        $list = $pdo->query('SELECT MIN(id) AS id, full_name, MIN(birth_date) AS birth_date, MIN(passport) AS passport, MIN(phone) AS phone, MIN(email) AS email, MIN(created_at) AS created_at FROM tourists GROUP BY full_name, birth_date, passport ORDER BY created_at DESC')->fetchAll();
         $view = Twig::fromRequest($request);
         return $view->render($response, 'admin/tourists/index.twig', [
             'tourists' => $list,

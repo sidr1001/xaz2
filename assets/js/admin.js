@@ -4,6 +4,16 @@ $(function(){
     console.error('AJAX error', xhr.status, xhr.responseText);
   });
 
+  // Global Toastr defaults
+  if (window.toastr) {
+    toastr.options = {
+      closeButton: true,
+      progressBar: true,
+      positionClass: 'toast-bottom-right',
+      timeOut: 4000
+    };
+  }
+
   // mark user interaction on daterange inputs
   $('input[name="created_range"], input[name="trip_range"]').on('change input', function(){
     $(this).data('userSet', true);
