@@ -1,0 +1,43 @@
+{% extends 'admin/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Отчеты</h1>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-tours" type="button" role="tab">Туры</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fin" type="button" role="tab">Финансы</button>
+  </li>
+  <li class="ms-auto"><a href="/admin/reports/tours.csv" class="btn btn-sm btn-outline-primary">Экспорт CSV</a></li>
+  </ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="tab-tours" role="tabpanel">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead><tr><th>ID</th><th>Название</th><th>Начало</th><th>Окончание</th><th>Тип</th><th>Заявок</th></tr></thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.title|e }}</td>
+            <td>{{ r.start_date|e }}</td>
+            <td>{{ r.end_date|e }}</td>
+            <td>{{ r.tour_type|default('—')|e }}</td>
+            <td>{{ r.bookings_count }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center text-muted">Нет данных</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="tab-fin" role="tabpanel">
+    <div class="alert alert-secondary">Финансовые отчеты будут добавлены позже.</div>
+  </div>
+</div>
+{% endblock %}
+

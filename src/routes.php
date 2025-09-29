@@ -14,6 +14,7 @@ use App\Controller\Admin\AgentsController;
 use App\Controller\Admin\TouristsController as AdminTouristsController;
 use App\Controller\Admin\BookingsController as AdminBookingsController;
 use App\Controller\Admin\PaymentsController as AdminPaymentsController;
+use App\Controller\Admin\ReportsController as AdminReportsController;
 use App\Controller\Admin\SettingsController as AdminSettingsController;
 use App\Controller\Agent\AuthController as AgentAuthController;
 use App\Controller\Agent\DashboardController as AgentDashboardController;
@@ -83,6 +84,10 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
     // Settings
     $group->get('/settings', [AdminSettingsController::class, 'index']);
     $group->post('/settings', [AdminSettingsController::class, 'save']);
+
+    // Reports
+    $group->get('/reports', [AdminReportsController::class, 'index']);
+    $group->get('/reports/tours.csv', [AdminReportsController::class, 'toursCsv']);
 })->add(new AdminAuthMiddleware());
 
 // Agent auth
