@@ -38,6 +38,7 @@
         {% if seats|length > 0 %}
         <p><strong>Места в автобусе:</strong> {{ seats|join(', ') }}</p>
         {% endif %}
+        {% endif %}
         <hr>
         <form method="post" action="/agent/bookings/{{ booking.id }}/comment" class="mt-2">
           <label class="form-label">Комментарий агента (виден администратору)</label>
