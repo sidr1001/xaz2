@@ -14,6 +14,15 @@ $(function(){
     };
   }
 
+  // Ensure non-AJAX forms carry CSRF token
+  $(document).on('submit', 'form:not([data-xhr])', function(){
+    const $f = $(this);
+    if ($f.find('input[name="_csrf"]').length === 0) {
+      const token = $('meta[name="csrf-token"]').attr('content');
+      if (token) { $('<input type="hidden" name="_csrf">').val(token).appendTo($f); }
+    }
+  });
+
   // Global XHR form handler
   $(document).on('submit', 'form[data-xhr]', function(e){
     e.preventDefault();
