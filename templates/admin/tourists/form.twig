@@ -3,7 +3,7 @@
 {% block content %}
 <h1 class="mb-3">Турист #{{ t.id }}</h1>
 
-<form method="post" action="/admin/tourists/{{ t.id }}/update" class="row g-3">
+<form method="post" action="/admin/tourists/{{ t.id }}/update" class="row g-3" data-xhr data-success-reload>
   <div class="col-md-6"><label class="form-label">ФИО</label><input class="form-control" name="full_name" value="{{ t.full_name|e }}"></div>
   <div class="col-md-3"><label class="form-label">Дата рождения</label><input type="date" class="form-control" name="birth_date" value="{{ t.birth_date|e }}"></div>
   <div class="col-md-3"><label class="form-label">Паспорт</label><input class="form-control" name="passport" value="{{ t.passport|e }}"></div>
@@ -14,7 +14,7 @@
 
 <hr>
 <h5>Документы</h5>
-<form method="post" action="/admin/tourists/{{ t.id }}/upload" enctype="multipart/form-data" class="mb-3">
+<form method="post" action="/admin/tourists/{{ t.id }}/upload" enctype="multipart/form-data" class="mb-3" data-xhr data-success-reload>
   <div class="input-group" style="max-width:560px;">
     <input type="file" name="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
     <button class="btn btn-outline-primary">Загрузить</button>
@@ -32,7 +32,7 @@
       {% endif %}
       <div class="d-flex justify-content-between align-items-center mt-2">
         <a class="small" href="{{ f.url|e }}" target="_blank" download>Скачать</a>
-        <form method="post" action="/admin/tourists/{{ t.id }}/file/delete">
+        <form method="post" action="/admin/tourists/{{ t.id }}/file/delete" data-xhr data-success-reload>
           <input type="hidden" name="file" value="{{ f.name|e }}">
           <button class="btn btn-sm btn-outline-danger">Удалить</button>
         </form>
