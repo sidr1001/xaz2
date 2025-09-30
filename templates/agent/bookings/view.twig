@@ -41,6 +41,7 @@
         {% endif %}
         <hr>
         <form method="post" action="/agent/bookings/{{ booking.id }}/comment" class="mt-2">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
           <label class="form-label">Комментарий агента (виден администратору)</label>
           <textarea class="form-control" name="agent_comment" rows="3" placeholder="Ваш комментарий">{{ booking.agent_comment|default('')|e }}</textarea>
           <button class="btn btn-sm btn-primary mt-2">Сохранить комментарий</button>
