@@ -33,12 +33,15 @@ $(function(){
     const url = $f.attr('action') || location.href;
     const method = ($f.attr('method')||'POST').toUpperCase();
     const isMultipart = ($f.attr('enctype')||'').toLowerCase().indexOf('multipart/form-data')>=0;
-    const ajaxOpts = { url, type: method, headers: { 'Accept':'application/json' } };
+    const token = $('meta[name="csrf-token"]').attr('content') || '';
+    const ajaxOpts = { url, type: method, headers: { 'Accept':'application/json', 'X-CSRF-Token': token } };
     if (isMultipart) {
       const fd = new FormData(this);
+      if (token && !fd.has('_csrf')) { fd.append('_csrf', token); }
       ajaxOpts.data = fd; ajaxOpts.processData = false; ajaxOpts.contentType = false;
     } else {
-      ajaxOpts.data = $f.serialize();
+      const qs = $f.serialize();
+      ajaxOpts.data = qs + (qs ? '&' : '') + '_csrf=' + encodeURIComponent(token);
     }
     $.ajax(ajaxOpts).done(function(resp){
       if (resp && resp.ok) {
