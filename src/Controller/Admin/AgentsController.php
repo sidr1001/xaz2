@@ -43,7 +43,8 @@ final class AgentsController
             ':permissions' => trim((string)($data['permissions'] ?? '')),
             ':acp' => (float)($data['agent_commission_percent'] ?? 0),
         ]);
-        return $response->withHeader('Location', '/admin/agents')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/agents'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function edit(Request $request, Response $response, array $args): Response
@@ -84,7 +85,8 @@ final class AgentsController
             ':acp' => (float)($data['agent_commission_percent'] ?? 0),
             ':id' => $id,
         ]);
-        return $response->withHeader('Location', '/admin/agents')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/agents'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function contractUpload(Request $request, Response $response, array $args): Response
@@ -102,7 +104,8 @@ final class AgentsController
         $dir = dirname(__DIR__,3).'/public/uploads/agents/'.$id;
         if(!is_dir($dir)) mkdir($dir, 0777, true);
         $file->moveTo($dir.'/contract.pdf');
-        return $response->withHeader('Location', '/admin/agents/'.$id.'/edit')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/agents/'.$id.'/edit'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function contractMode(Request $request, Response $response, array $args): Response

@@ -9,8 +9,17 @@ use App\Service\Csrf;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Start session for auth
+// Start session for auth with secure cookie params
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (($_ENV['APP_SECURE'] ?? 'false') === 'true');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 

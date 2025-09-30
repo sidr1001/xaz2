@@ -59,6 +59,7 @@ final class SettingsController
                 SettingsService::set('operator_stamp_path', str_replace(dirname(__DIR__,3).'/public', '', $path));
             }
         }
-        return $response->withHeader('Location', '/admin/settings')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/settings'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 }

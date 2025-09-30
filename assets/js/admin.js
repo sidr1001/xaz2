@@ -14,6 +14,32 @@ $(function(){
     };
   }
 
+  // Global XHR form handler
+  $(document).on('submit', 'form[data-xhr] ', function(e){
+    e.preventDefault();
+    const $f = $(this);
+    const url = $f.attr('action') || location.href;
+    const method = ($f.attr('method')||'POST').toUpperCase();
+    const isMultipart = ($f.attr('enctype')||'').toLowerCase().indexOf('multipart/form-data')>=0;
+    const ajaxOpts = { url, type: method, headers: { 'Accept':'application/json' } };
+    if (isMultipart) {
+      const fd = new FormData(this);
+      ajaxOpts.data = fd; ajaxOpts.processData = false; ajaxOpts.contentType = false;
+    } else {
+      ajaxOpts.data = $f.serialize();
+    }
+    $.ajax(ajaxOpts).done(function(resp){
+      if (resp && resp.ok) {
+        if (window.toastr) toastr.success(resp.message || 'Сохранено');
+        if (resp.redirect) { window.location.href = resp.redirect; }
+      } else {
+        if (window.toastr) toastr.error((resp && (resp.error||resp.message)) || 'Ошибка');
+      }
+    }).fail(function(xhr){
+      if (window.toastr) toastr.error('Ошибка сервера: '+xhr.status);
+    });
+  });
+
   // mark user interaction on daterange inputs
   $('input[name="created_range"], input[name="trip_range"]').on('change input', function(){
     $(this).data('userSet', true);

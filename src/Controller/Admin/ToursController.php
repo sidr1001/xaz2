@@ -82,7 +82,8 @@ final class ToursController
             }
         }
 
-        return $response->withHeader('Location', '/admin/tours')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/tours'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function edit(Request $request, Response $response, array $args): Response
@@ -157,7 +158,8 @@ final class ToursController
             }
         }
 
-        return $response->withHeader('Location', '/admin/tours')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/tours'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function delete(Request $request, Response $response, array $args): Response
@@ -165,7 +167,8 @@ final class ToursController
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare('DELETE FROM tours WHERE id = :id');
         $stmt->execute([':id' => (int)$args['id']]);
-        return $response->withHeader('Location', '/admin/tours')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/tours'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     private function moveUploadedFile($uploadedFile): string
