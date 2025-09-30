@@ -40,7 +40,7 @@
         {% endif %}
         {% endif %}
         <hr>
-        <form method="post" action="/agent/bookings/{{ booking.id }}/comment" class="mt-2">
+        <form method="post" action="/agent/bookings/{{ booking.id }}/comment" class="mt-2" data-xhr data-success-reload>
           <input type="hidden" name="_csrf" value="{{ csrf }}">
           <label class="form-label">Комментарий агента (виден администратору)</label>
           <textarea class="form-control" name="agent_comment" rows="3" placeholder="Ваш комментарий">{{ booking.agent_comment|default('')|e }}</textarea>
