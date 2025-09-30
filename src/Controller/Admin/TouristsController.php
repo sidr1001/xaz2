@@ -71,13 +71,18 @@ final class TouristsController
         $uploadedFiles = $request->getUploadedFiles();
         $file = $uploadedFiles['file'] ?? null;
         if (!$file) { return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit?error=nofile')->withStatus(302); }
+        if ($file->getSize() > 10*1024*1024) { return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit?error=size')->withStatus(302); }
         $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
-        if (!in_array($ext, ['jpg','jpeg','png','pdf'], true)) {
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($file->getStream()->getContents());
+        $file->getStream()->rewind();
+        $allowed = ['image/jpeg'=>'jpg','image/png'=>'png','application/pdf'=>'pdf'];
+        if (!array_key_exists($mime, $allowed)) {
             return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit?error=type')->withStatus(302);
         }
         $dir = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$id;
         if (!is_dir($dir)) mkdir($dir, 0777, true);
-        $name = bin2hex(random_bytes(8)).'.'.$ext;
+        $name = bin2hex(random_bytes(8)).'.'.$allowed[$mime];
         $path = $dir.'/'.$name;
         $file->moveTo($path);
         return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit')->withStatus(302);

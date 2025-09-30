@@ -88,7 +88,7 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
     // Reports
     $group->get('/reports', [AdminReportsController::class, 'index']);
     $group->get('/reports/tours.csv', [AdminReportsController::class, 'toursCsv']);
-})->add(new AdminAuthMiddleware());
+})->add(new AdminAuthMiddleware())->add(new CsrfMiddleware());
 
 // Agent auth
 $app->map(['GET'], '/agent/login', [AgentAuthController::class, 'loginForm']);
@@ -119,7 +119,7 @@ $app->group('/agent', function (RouteCollectorProxy $group) {
     $group->get('/profile/contract', [AgentProfileController::class, 'contract']);
     $group->post('/profile/upload/signature', [AgentProfileController::class, 'uploadSignature']);
     $group->post('/profile/upload/stamp', [AgentProfileController::class, 'uploadStamp']);
-})->add(new AgentAuthMiddleware());
+})->add(new AgentAuthMiddleware())->add(new CsrfMiddleware());
 
 // 404 handler
 $app->any('/{routes:.+}', function ($request, $response) {
