@@ -35,6 +35,10 @@ final class AgentsController
     public function store(Request $request, Response $response): Response
     {
         $data = (array)$request->getParsedBody();
+        $errors = [];
+        if (trim((string)($data['login']??''))==='') { $errors['login']='Логин обязателен'; }
+        if (trim((string)($data['password']??''))==='') { $errors['password']='Пароль обязателен'; }
+        if ($errors) { $response->getBody()->write(json_encode(['ok'=>false,'errors'=>$errors], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare('INSERT INTO agents(login, password, permissions, agent_commission_percent, created_at) VALUES(:login, :password, :permissions, :acp, NOW())');
         $stmt->execute([
@@ -76,6 +80,10 @@ final class AgentsController
     {
         $id = (int)$args['id'];
         $data = (array)$request->getParsedBody();
+        $errors = [];
+        if (trim((string)($data['login']??''))==='') { $errors['login']='Логин обязателен'; }
+        if (trim((string)($data['password']??''))==='') { $errors['password']='Пароль обязателен'; }
+        if ($errors) { $response->getBody()->write(json_encode(['ok'=>false,'errors'=>$errors], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare('UPDATE agents SET login=:login, password=:password, permissions=:permissions, agent_commission_percent=:acp WHERE id=:id');
         $stmt->execute([
@@ -94,13 +102,12 @@ final class AgentsController
         $id = (int)$args['id'];
         $files = $request->getUploadedFiles();
         $file = $files['contract'] ?? null;
-        if (!$file || $file->getError() !== UPLOAD_ERR_OK) {
-            return $response->withHeader('Location', '/admin/agents/'.$id.'/edit?error=upload')->withStatus(302);
-        }
-        $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
-        if ($ext !== 'pdf') {
-            return $response->withHeader('Location', '/admin/agents/'.$id.'/edit?error=type')->withStatus(302);
-        }
+        if (!$file || $file->getError() !== UPLOAD_ERR_OK) { $response->getBody()->write(json_encode(['ok'=>false,'error'=>'Файл обязателен'], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
+        if ($file->getSize() > 10*1024*1024) { $response->getBody()->write(json_encode(['ok'=>false,'error'=>'Слишком большой файл'], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($file->getStream()->getContents());
+        $file->getStream()->rewind();
+        if ($mime !== 'application/pdf') { $response->getBody()->write(json_encode(['ok'=>false,'error'=>'Только PDF'], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
         $dir = dirname(__DIR__,3).'/public/uploads/agents/'.$id;
         if(!is_dir($dir)) mkdir($dir, 0777, true);
         $file->moveTo($dir.'/contract.pdf');
@@ -119,7 +126,8 @@ final class AgentsController
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare('DELETE FROM agents WHERE id = :id');
         $stmt->execute([':id' => (int)$args['id']]);
-        return $response->withHeader('Location', '/admin/agents')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/agents'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 }
 
