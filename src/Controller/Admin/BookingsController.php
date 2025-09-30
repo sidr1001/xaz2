@@ -96,7 +96,8 @@ final class BookingsController
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare('UPDATE bookings SET payment_status=:s WHERE id=:id');
         $stmt->execute([':s' => $status, ':id' => $id]);
-        return $response->withHeader('Location', '/admin/bookings/'.$id)->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Статус оплаты обновлен'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function orderStatus(Request $request, Response $response, array $args): Response
@@ -108,7 +109,8 @@ final class BookingsController
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare('UPDATE bookings SET order_status=:s WHERE id=:id');
         $stmt->execute([':s' => $status, ':id' => $id]);
-        return $response->withHeader('Location', '/admin/bookings/'.$id)->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Статус заявки обновлен'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function generateDocuments(Request $request, Response $response, array $args): Response

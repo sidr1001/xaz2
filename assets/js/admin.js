@@ -15,9 +15,12 @@ $(function(){
   }
 
   // Global XHR form handler
-  $(document).on('submit', 'form[data-xhr] ', function(e){
+  $(document).on('submit', 'form[data-xhr]', function(e){
     e.preventDefault();
     const $f = $(this);
+    // clear previous errors
+    $f.find('.is-invalid').removeClass('is-invalid');
+    $f.find('.js-error').remove();
     const url = $f.attr('action') || location.href;
     const method = ($f.attr('method')||'POST').toUpperCase();
     const isMultipart = ($f.attr('enctype')||'').toLowerCase().indexOf('multipart/form-data')>=0;
@@ -31,8 +34,18 @@ $(function(){
     $.ajax(ajaxOpts).done(function(resp){
       if (resp && resp.ok) {
         if (window.toastr) toastr.success(resp.message || 'Сохранено');
-        if (resp.redirect) { window.location.href = resp.redirect; }
+        if (resp.redirect) { window.location.href = resp.redirect; return; }
+        if ($f.is('[data-success-reload]')) { window.location.reload(); return; }
       } else {
+        if (resp && resp.errors && typeof resp.errors === 'object') {
+          Object.keys(resp.errors).forEach(function(name){
+            const $field = $f.find('[name="'+name+'"]');
+            if ($field.length) {
+              $field.addClass('is-invalid');
+              $('<div class="form-text text-danger js-error"></div>').text(resp.errors[name]).insertAfter($field);
+            }
+          });
+        }
         if (window.toastr) toastr.error((resp && (resp.error||resp.message)) || 'Ошибка');
       }
     }).fail(function(xhr){
