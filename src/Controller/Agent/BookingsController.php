@@ -110,6 +110,11 @@ final class BookingsController
             if (!is_dir($dir)) { mkdir($dir, 0777, true); }
             file_put_contents($dir . '/agent_comment.txt', $comment);
         }
+        $accept = $request->getHeaderLine('Accept');
+        if (stripos($accept, 'application/json') !== false || $request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest') {
+            $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Комментарий сохранен'], JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type','application/json');
+        }
         return $response->withHeader('Location', '/agent/bookings/'.$id)->withStatus(302);
     }
 
