@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Middleware\AdminAuthMiddleware;
 use App\Middleware\AgentAuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Middleware\RateLimitMiddleware;
 use App\Controller\HomeController;
 use App\Controller\TourController;
 use App\Controller\BookingController;
@@ -38,8 +39,8 @@ $app->post('/booking', [BookingController::class, 'store'])->add(new CsrfMiddlew
 $app->post('/payment/tbank/callback', [PaymentWebhookController::class, 'tbank']);
 
 // Admin auth
-$app->map(['GET'], '/admin/login', [AdminAuthController::class, 'loginForm']);
-$app->map(['POST'], '/admin/login', [AdminAuthController::class, 'login']);
+$app->map(['GET'], '/admin/login', [AdminAuthController::class, 'loginForm'])->add(new RateLimitMiddleware(60, 300));
+$app->map(['POST'], '/admin/login', [AdminAuthController::class, 'login'])->add(new RateLimitMiddleware(10, 300));
 $app->get('/admin/logout', [AdminAuthController::class, 'logout']);
 
 // Protected admin routes
@@ -91,8 +92,8 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
 })->add(new AdminAuthMiddleware())->add(new CsrfMiddleware());
 
 // Agent auth
-$app->map(['GET'], '/agent/login', [AgentAuthController::class, 'loginForm']);
-$app->map(['POST'], '/agent/login', [AgentAuthController::class, 'login']);
+$app->map(['GET'], '/agent/login', [AgentAuthController::class, 'loginForm'])->add(new RateLimitMiddleware(60, 300));
+$app->map(['POST'], '/agent/login', [AgentAuthController::class, 'login'])->add(new RateLimitMiddleware(10, 300));
 $app->get('/agent/logout', [AgentAuthController::class, 'logout']);
 
 // Agent area

@@ -40,13 +40,16 @@ final class DashboardController
         $perPage = max(1, min(60, (int)($q['per_page'] ?? 12)));
         $page = max(1, (int)($q['page'] ?? 1));
         $offset = ($page-1)*$perPage;
-        $stmt = $pdo->prepare("SELECT SQL_CALC_FOUND_ROWS * FROM tours {$where} ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+        $stmt = $pdo->prepare("SELECT * FROM tours {$where} ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
         foreach ($params as $k=>$v) { $stmt->bindValue($k, $v); }
         $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
         $tours = $stmt->fetchAll();
-        $total = (int)$pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
+        $countStmt = $pdo->prepare("SELECT COUNT(*) FROM tours {$where}");
+        foreach ($params as $k=>$v) { $countStmt->bindValue($k, $v); }
+        $countStmt->execute();
+        $total = (int)$countStmt->fetchColumn();
 
         // Seats taken per tour
         $takenMap = [];

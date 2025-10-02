@@ -24,7 +24,8 @@ final class AuthController
         $validLogin = $_ENV['ADMIN_DEFAULT_LOGIN'] ?? 'admin';
         $validPassword = $_ENV['ADMIN_DEFAULT_PASSWORD'] ?? 'admin';
 
-        if ($login === $validLogin && $password === $validPassword) {
+        if (($login === $validLogin) && ($password === $validPassword || password_verify($password, (string)$validPassword))) {
+            if (session_status() === PHP_SESSION_ACTIVE) { @session_regenerate_id(true); }
             $_SESSION['admin'] = true;
             return $response->withHeader('Location', '/admin')->withStatus(302);
         }

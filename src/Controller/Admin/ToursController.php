@@ -175,12 +175,14 @@ final class ToursController
     {
         $directory = dirname(__DIR__, 3) . '/public/uploads';
         if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
+            mkdir($directory, 0755, true);
         }
         $basename = bin2hex(random_bytes(8));
         $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
         $filename = sprintf('%s.%s', $basename, $extension ?: 'jpg');
-        $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+        $dest = $directory . DIRECTORY_SEPARATOR . $filename;
+        $uploadedFile->moveTo($dest);
+        @chmod($dest, 0644);
         return '/uploads/' . $filename;
     }
 }

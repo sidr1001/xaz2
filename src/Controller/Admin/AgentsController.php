@@ -43,7 +43,7 @@ final class AgentsController
         $stmt = $pdo->prepare('INSERT INTO agents(login, password, permissions, agent_commission_percent, created_at) VALUES(:login, :password, :permissions, :acp, NOW())');
         $stmt->execute([
             ':login' => trim((string)($data['login'] ?? '')),
-            ':password' => trim((string)($data['password'] ?? '')),
+            ':password' => password_hash(trim((string)($data['password'] ?? '')), PASSWORD_DEFAULT),
             ':permissions' => trim((string)($data['permissions'] ?? '')),
             ':acp' => (float)($data['agent_commission_percent'] ?? 0),
         ]);
@@ -88,7 +88,7 @@ final class AgentsController
         $stmt = $pdo->prepare('UPDATE agents SET login=:login, password=:password, permissions=:permissions, agent_commission_percent=:acp WHERE id=:id');
         $stmt->execute([
             ':login' => trim((string)($data['login'] ?? '')),
-            ':password' => trim((string)($data['password'] ?? '')),
+            ':password' => password_hash(trim((string)($data['password'] ?? '')), PASSWORD_DEFAULT),
             ':permissions' => trim((string)($data['permissions'] ?? '')),
             ':acp' => (float)($data['agent_commission_percent'] ?? 0),
             ':id' => $id,
@@ -109,8 +109,10 @@ final class AgentsController
         $file->getStream()->rewind();
         if ($mime !== 'application/pdf') { $response->getBody()->write(json_encode(['ok'=>false,'error'=>'Только PDF'], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
         $dir = dirname(__DIR__,3).'/public/uploads/agents/'.$id;
-        if(!is_dir($dir)) mkdir($dir, 0777, true);
-        $file->moveTo($dir.'/contract.pdf');
+        if(!is_dir($dir)) mkdir($dir, 0755, true);
+        $dest = $dir.'/contract.pdf';
+        $file->moveTo($dest);
+        @chmod($dest, 0644);
         $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/agents/'.$id.'/edit'], JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type','application/json');
     }

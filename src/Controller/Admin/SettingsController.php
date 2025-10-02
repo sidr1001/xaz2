@@ -41,13 +41,14 @@ final class SettingsController
         $files = $request->getUploadedFiles();
         $uploadDir = dirname(__DIR__, 3) . '/public/uploads/operator';
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+            mkdir($uploadDir, 0755, true);
         }
         if (isset($files['operator_signature']) && $files['operator_signature']->getError() === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($files['operator_signature']->getClientFilename(), PATHINFO_EXTENSION));
             if (in_array($ext, ['png','jpg','jpeg'], true)) {
                 $path = $uploadDir . '/signature.png';
                 $files['operator_signature']->moveTo($path);
+                @chmod($path, 0644);
                 SettingsService::set('operator_signature_path', str_replace(dirname(__DIR__,3).'/public', '', $path));
             }
         }
@@ -56,6 +57,7 @@ final class SettingsController
             if (in_array($ext, ['png','jpg','jpeg'], true)) {
                 $path = $uploadDir . '/stamp.png';
                 $files['operator_stamp']->moveTo($path);
+                @chmod($path, 0644);
                 SettingsService::set('operator_stamp_path', str_replace(dirname(__DIR__,3).'/public', '', $path));
             }
         }

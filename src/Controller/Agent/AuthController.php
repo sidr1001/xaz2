@@ -20,10 +20,14 @@ final class AuthController
     {
         $data = (array)$request->getParsedBody();
         $pdo = Database::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM agents WHERE login=:l AND password=:p');
-        $stmt->execute([':l' => $data['login'] ?? '', ':p' => $data['password'] ?? '']);
+        $stmt = $pdo->prepare('SELECT * FROM agents WHERE login=:l');
+        $stmt->execute([':l' => $data['login'] ?? '']);
         $agent = $stmt->fetch();
-        if ($agent) {
+        $password = (string)($data['password'] ?? '');
+        if ($agent && is_string($agent['password']) && (
+            password_verify($password, (string)$agent['password']) || $password === (string)$agent['password']
+        )) {
+            if (session_status() === PHP_SESSION_ACTIVE) { @session_regenerate_id(true); }
             $_SESSION['agent_id'] = (int)$agent['id'];
             return $response->withHeader('Location', '/agent')->withStatus(302);
         }

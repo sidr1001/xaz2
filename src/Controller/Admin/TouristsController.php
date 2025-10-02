@@ -83,10 +83,11 @@ final class TouristsController
             return $response->withHeader('Content-Type','application/json');
         }
         $dir = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$id;
-        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
         $name = bin2hex(random_bytes(8)).'.'.$allowed[$mime];
         $path = $dir.'/'.$name;
         $file->moveTo($path);
+        @chmod($path, 0644);
         $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Файл загружен','redirect'=>'/admin/tourists/'.$id.'/edit'], JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type','application/json');
     }
