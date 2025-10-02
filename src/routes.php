@@ -22,6 +22,7 @@ use App\Controller\Agent\DashboardController as AgentDashboardController;
 use App\Controller\Agent\BookingsController as AgentBookingsController;
 use App\Controller\Agent\ProfileController as AgentProfileController;
 use App\Controller\Agent\PaymentsController as AgentPaymentsController;
+use App\Settings;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
 use App\Controller\PaymentWebhookController;
@@ -39,8 +40,14 @@ $app->post('/booking', [BookingController::class, 'store'])->add(new CsrfMiddlew
 $app->post('/payment/tbank/callback', [PaymentWebhookController::class, 'tbank']);
 
 // Admin auth
-$app->map(['GET'], '/admin/login', [AdminAuthController::class, 'loginForm'])->add(new RateLimitMiddleware(60, 300));
-$app->map(['POST'], '/admin/login', [AdminAuthController::class, 'login'])->add(new RateLimitMiddleware(10, 300));
+// Rate limit values from env/config
+$rlGetMax = (int)(Settings::get('RL_LOGIN_GET_MAX', '60') ?? '60');
+$rlGetWin = (int)(Settings::get('RL_LOGIN_GET_WINDOW', '300') ?? '300');
+$rlPostMax = (int)(Settings::get('RL_LOGIN_POST_MAX', '10') ?? '10');
+$rlPostWin = (int)(Settings::get('RL_LOGIN_POST_WINDOW', '300') ?? '300');
+
+$app->map(['GET'], '/admin/login', [AdminAuthController::class, 'loginForm'])->add(new RateLimitMiddleware($rlGetMax, $rlGetWin));
+$app->map(['POST'], '/admin/login', [AdminAuthController::class, 'login'])->add(new RateLimitMiddleware($rlPostMax, $rlPostWin));
 $app->get('/admin/logout', [AdminAuthController::class, 'logout']);
 
 // Protected admin routes
@@ -92,8 +99,8 @@ $app->group('/admin', function (RouteCollectorProxy $group) {
 })->add(new AdminAuthMiddleware())->add(new CsrfMiddleware());
 
 // Agent auth
-$app->map(['GET'], '/agent/login', [AgentAuthController::class, 'loginForm'])->add(new RateLimitMiddleware(60, 300));
-$app->map(['POST'], '/agent/login', [AgentAuthController::class, 'login'])->add(new RateLimitMiddleware(10, 300));
+$app->map(['GET'], '/agent/login', [AgentAuthController::class, 'loginForm'])->add(new RateLimitMiddleware($rlGetMax, $rlGetWin));
+$app->map(['POST'], '/agent/login', [AgentAuthController::class, 'login'])->add(new RateLimitMiddleware($rlPostMax, $rlPostWin));
 $app->get('/agent/logout', [AgentAuthController::class, 'logout']);
 
 // Agent area

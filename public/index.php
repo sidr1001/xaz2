@@ -18,7 +18,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
         'domain' => '',
         'secure' => $isHttps,
         'httponly' => true,
-        'samesite' => 'Lax',
+        'samesite' => ($_ENV['SESSION_SAMESITE'] ?? 'Lax'),
     ]);
     session_start();
 }
