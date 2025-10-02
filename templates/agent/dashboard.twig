@@ -1,16 +1,82 @@
 {% extends 'agent/layout.twig' %}
 
 {% block content %}
-<h1 class="mb-3">Туры</h1>
-<div class="row g-3">
+<h1 class="mb-3 d-flex align-items-center justify-content-between">
+  <span>Туры</span>
+  <div class="d-flex align-items-center gap-2">
+    <div class="btn-group" role="group" aria-label="View">
+      {% set isList = filters.view == 'list' %}
+      <a class="btn btn-sm {{ isList ? 'btn-outline-secondary' : 'btn-secondary' }}" href="?{{ filters|merge({'view':'grid'})|url_encode }}" title="Сетка"><i class="bi bi-grid"></i></a>
+      <a class="btn btn-sm {{ isList ? 'btn-secondary' : 'btn-outline-secondary' }}" href="?{{ filters|merge({'view':'list'})|url_encode }}" title="Список"><i class="bi bi-list"></i></a>
+    </div>
+    <select id="perPage" class="form-select form-select-sm" style="width:auto;">
+      {% for n in [8,12,16,20,24,28] %}
+      <option value="{{ n }}" {{ perPage==n ? 'selected' }}>{{ n }}/стр</option>
+      {% endfor %}
+    </select>
+  </div>
+</h1>
+
+<form class="row g-2 mb-3" method="get" id="agent-filters">
+  <div class="col-sm-3"><input name="q" value="{{ filters.q|e }}" class="form-control" placeholder="Поиск по названию..."></div>
+  <div class="col-sm-2">
+    <select name="country" class="form-select" {{ values.countries|length==0 ? 'disabled' }}>
+      <option value="">Страна</option>
+      {% for v in values.countries %}<option value="{{ v|e }}" {{ filters.country==v ? 'selected' }}>{{ v|e }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-2">
+    <select name="region" class="form-select" {{ values.regions|length==0 ? 'disabled' }}>
+      <option value="">Регион</option>
+      {% for v in values.regions %}<option value="{{ v|e }}" {{ filters.region==v ? 'selected' }}>{{ v|e }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-2">
+    <select name="city" class="form-select" {{ values.cities|length==0 ? 'disabled' }}>
+      <option value="">Город</option>
+      {% for v in values.cities %}<option value="{{ v|e }}" {{ filters.city==v ? 'selected' }}>{{ v|e }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-1"><input type="date" name="start_date" value="{{ filters.start_date|e }}" class="form-control" placeholder="c"></div>
+  <div class="col-sm-1"><input type="date" name="end_date" value="{{ filters.end_date|e }}" class="form-control" placeholder="до"></div>
+  <div class="col-sm-1"><input type="number" name="min_price" id="min_price" value="{{ filters.min_price|default(priceMin)|e }}" min="{{ priceMin }}" class="form-control" placeholder="Мин"></div>
+  <div class="col-sm-1"><input type="number" name="max_price" id="max_price" value="{{ filters.max_price|default(priceMax)|e }}" max="{{ priceMax }}" class="form-control" placeholder="Макс"></div>
+  <div class="col-sm-2 d-flex gap-2">
+    <button class="btn btn-primary w-100">Применить</button>
+    <a href="/agent" class="btn btn-outline-secondary">Сброс</a>
+  </div>
+</form>
+
+<div id="agent-tours" class="row g-3" data-view="{{ filters.view|default('grid') }}">
   {% for tour in tours %}
-  <div class="col-md-4">
+  <div class="col-12 col-md-6 col-lg-3 tour-card">
     <div class="card h-100">
-      {% if tour.image %}<img src="{{ tour.image|e }}" class="card-img-top" alt="">{% endif %}
+      {% if tour.image %}
+      <div class="thumb-wrap">
+        <div class="ratio" style="--bs-aspect-ratio: {{ (settings.card_image_height|default(320) / settings.card_image_width|default(480) * 100) | number_format(6, '.', '') }}%">
+          <img src="{{ tour.image|e }}" class="w-100 h-100 agent-card-img" style="object-fit: cover;" alt="">
+        </div>
+      </div>
+      {% endif %}
       <div class="card-body">
         <h5 class="card-title">{{ tour.title|e }}</h5>
-        <p class="card-text">{{ tour.price|e }} ₽</p>
-        <a href="/agent/tours/{{ tour.id }}/book" class="btn btn-primary btn-sm">Создать заявку</a>
+        <div class="small text-muted mb-1">{{ tour.country|e }} {{ tour.region ? '• ' ~ tour.region : '' }} {{ tour.city ? '• ' ~ tour.city : '' }}</div>
+        <div class="small text-muted mb-2">{{ tour.start_date|e }} — {{ tour.end_date|e }}</div>
+        {% if tour.tour_type=='bus' and tour.bus_seats_total is defined %}
+          {% set taken = seatsTakenMap[tour.id]|default(0) %}
+          <div class="small">Мест в автобусе: {{ taken }}/{{ tour.bus_seats_total }}</div>
+        {% endif %}
+        <p class="card-text">{{ tour.description|striptags|slice(0,140) ~ (tour.description|length>140 ? '…' : '') }}</p>
+        <div class="d-flex justify-content-between align-items-center">
+          {% set final = tour.price * (1 - (agentCommissionPercent|default(0)/100.0)) %}
+          <strong>{{ final|number_format(2, '.', ' ') }} ₽</strong>
+          {% set busFull = (tour.tour_type=='bus' and tour.bus_seats_total is defined and (seatsTakenMap[tour.id]|default(0)) >= tour.bus_seats_total) %}
+          {% if busFull %}
+            <span class="badge bg-secondary">Автобус заполнен</span>
+          {% else %}
+            <a href="/agent/tours/{{ tour.id }}/book" class="btn btn-primary btn-sm">Создать заявку</a>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
@@ -18,5 +84,66 @@
   <div class="col-12"><div class="alert alert-secondary">Нет туров</div></div>
   {% endfor %}
 </div>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <div>Показано: {{ tours|length }} из {{ total }}</div>
+  <div class="btn-group">
+    {% set prev = page>1 ? (page-1) : 1 %}
+    {% set next = page*perPage<total ? (page+1) : page %}
+    <a class="btn btn-outline-secondary btn-sm {{ page==1? 'disabled' }}" href="?{{ filters|merge({'page': prev, 'per_page': perPage})|url_encode }}">Назад</a>
+    <a class="btn btn-outline-secondary btn-sm {{ page*perPage>=total? 'disabled' }}" href="?{{ filters|merge({'page': next, 'per_page': perPage})|url_encode }}">Вперёд</a>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+$(function(){
+  const $view = $('#viewMode');
+  const $per = $('#perPage');
+  $view.on('change', function(){
+    const url = new URL(location.href);
+    url.searchParams.set('view', $(this).val());
+    location.href = url.toString();
+  });
+  $per.on('change', function(){
+    const url = new URL(location.href);
+    url.searchParams.set('per_page', $(this).val());
+    url.searchParams.set('page', '1');
+    location.href = url.toString();
+  });
+
+  const view = $('#agent-tours').data('view');
+  if(view==='list'){
+    $('.tour-card').removeClass('col-lg-3 col-md-6').addClass('col-12');
+    // image left, content right
+    $('.tour-card .card').addClass('flex-row');
+    const imgW = {{ settings.card_image_width|default(480) }};
+    $('.tour-card .thumb-wrap').addClass('flex-shrink-0 me-3').css({width: imgW + 'px'});
+    // ensure body flex-fill
+    $('.tour-card .card-body').addClass('flex-fill');
+  }
+});
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.css">
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.js"></script>
+<script>
+$(function(){
+  const slider = document.createElement('div');
+  slider.id = 'priceSlider';
+  const wrap = $('<div class="col-12"></div>');
+  wrap.append(slider);
+  $('#agent-filters').append(wrap);
+  const min = {{ priceMin }};
+  const max = {{ priceMax }};
+  const startMin = parseInt($('#min_price').val()||min,10);
+  const startMax = parseInt($('#max_price').val()||max,10);
+  noUiSlider.create(slider, { start: [startMin, startMax], connect: true, range: { min: min, max: max }, step: 1 });
+  slider.noUiSlider.on('update', function(values){
+    $('#min_price').val(Math.round(values[0]));
+    $('#max_price').val(Math.round(values[1]));
+  });
+});
+</script>
+{% endblock %}
 {% endblock %}
 

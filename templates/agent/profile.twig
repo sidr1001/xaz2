@@ -1,0 +1,73 @@
+{% extends 'agent/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Профиль агента</h1>
+<form method="post" action="/agent/profile" class="row g-3" data-xhr data-success-reload>	
+  <div class="col-md-4"><label class="form-label">Email для авторизации</label><input class="form-control" type="email" required name="email" value="{{ data.email|e }}" placeholder="name@example.com"></div>
+  <div class="col-md-4"><label class="form-label">Телефон</label><input class="form-control js-mask-phone" required name="phone" value="{{ data.phone|e }}" placeholder="+7 (___) ___-__-__"></div>
+  <div class="col-md-4"><label class="form-label">Email дополнительный</label><input class="form-control" type="email" name="email_alt" value="{{ data.email_alt|e }}" placeholder="name@example.com"></div>
+  <div class="col-md-4"><label class="form-label">Телефон доп.</label><input class="form-control js-mask-phone" name="phone_alt" value="{{ data.phone_alt|e }}" placeholder="+7 (___) ___-__-__"></div>
+
+  <div class="col-md-4"><label class="form-label">Фамилия</label><input class="form-control" name="last_name" value="{{ data.last_name|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Имя</label><input class="form-control" name="first_name" value="{{ data.first_name|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Отчество</label><input class="form-control" name="middle_name" value="{{ data.middle_name|e }}"></div>
+
+  <div class="col-md-4"><label class="form-label">Название организации</label><input class="form-control" name="org_name" value="{{ data.org_name|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Краткое название</label><input class="form-control" name="org_short_name" value="{{ data.org_short_name|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Юридический адрес</label><input class="form-control" name="legal_address" value="{{ data.legal_address|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Фактический адрес</label><input class="form-control" name="actual_address" value="{{ data.actual_address|e }}"></div>
+
+  <div class="col-md-4"><label class="form-label">ИНН</label><input class="form-control js-mask-inn" name="inn" value="{{ data.inn|e }}" placeholder="10 или 12 цифр"></div>
+  <div class="col-md-4"><label class="form-label">ОГРН</label><input class="form-control" name="ogrn" value="{{ data.ogrn|e }}"></div>
+  <div class="col-md-4"><label class="form-label">ОКПО</label><input class="form-control js-mask-okpo" name="okpo" value="{{ data.okpo|e }}" placeholder="8 или 10 цифр"></div>
+
+  <div class="col-md-4"><label class="form-label">Генеральный директор</label><input class="form-control" name="ceo" value="{{ data.ceo|e }}"></div>
+  <div class="col-md-4"><label class="form-label">(Директор) действует на основании</label><input class="form-control" name="ceo_basis" value="{{ data.ceo_basis|e }}"></div>
+
+  <div class="col-md-4"><label class="form-label">Номер договора</label><input class="form-control" name="contract_number" value="{{ data.contract_number|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Дата начала действия</label><input class="form-control" type="date" name="contract_date_from" value="{{ data.contract_date_from|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Дата окончания</label><input class="form-control" type="date" name="contract_date_to" value="{{ data.contract_date_to|e }}"></div>
+
+  <div class="col-md-4"><label class="form-label">Расчетный счет</label><input class="form-control" name="account_number" value="{{ data.account_number|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Валюта счета</label><input class="form-control" name="account_currency" value="{{ data.account_currency|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Наименование банка</label><input class="form-control" name="bank_name" value="{{ data.bank_name|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Код банка</label><input class="form-control" name="bank_code" value="{{ data.bank_code|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Адрес банка</label><input class="form-control" name="bank_address" value="{{ data.bank_address|e }}"></div>
+  <div class="col-md-4"><label class="form-label">ИНН банка</label><input class="form-control js-mask-inn" name="bank_inn" value="{{ data.bank_inn|e }}"></div>
+  <div class="col-md-4"><label class="form-label">КПП</label><input class="form-control js-mask-kpp" name="kpp" value="{{ data.kpp|e }}"></div>
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-primary">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="/agent/profile/contract" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Агентский договор (скачать)</a>
+  </div>
+</form>
+
+<hr>
+<h5 class="mb-2">Подпись и печать</h5>
+<div class="row g-3">
+  <div class="col-md-6">
+    <form method="post" action="/agent/profile/upload/signature" enctype="multipart/form-data" class="input-group" style="max-width:520px;" data-xhr>
+      <input type="file" class="form-control" name="signature" accept=".png,.jpg,.jpeg" required>
+      <button class="btn btn-outline-primary">Загрузить подпись</button>
+    </form>
+  </div>
+  <div class="col-md-6">
+    <form method="post" action="/agent/profile/upload/stamp" enctype="multipart/form-data" class="input-group" style="max-width:520px;" data-xhr>
+      <input type="file" class="form-control" name="stamp" accept=".png,.jpg,.jpeg" required>
+      <button class="btn btn-outline-primary">Загрузить печать</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function(){
+  $('.js-mask-phone').inputmask({ mask: '+7 (999) 999-99-99' });
+  $('.js-mask-inn').inputmask({ mask: '9{10,12}', greedy: false, placeholder: '' });
+  $('.js-mask-kpp').inputmask({ mask: '9{9}', placeholder: '' });
+  $('.js-mask-okpo').inputmask({ mask: '9{8,10}', greedy: false, placeholder: '' });
+});
+</script>
+{% endblock %}
+

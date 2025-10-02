@@ -27,17 +27,27 @@ final class BookingController
         $pdo = Database::getConnection();
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO bookings(tour_id, agent_id, customer_name, customer_phone, customer_email, status, total_amount) VALUES(:tour_id, :agent_id, :name, :phone, :email, :status, :amount)');
+            $stmt = $pdo->prepare('INSERT INTO bookings(tour_id, agent_id, customer_name, customer_phone, customer_email, order_status, payment_status, total_amount, created_at) VALUES(:tour_id, :agent_id, :name, :phone, :email, :order_status, :payment_status, :amount, NOW())');
             $stmt->execute([
                 ':tour_id' => (int)($data['tour_id'] ?? 0),
                 ':agent_id' => $_SESSION['agent_id'] ?? null,
                 ':name' => trim((string)($data['customer_name'] ?? '')),
                 ':phone' => trim((string)($data['customer_phone'] ?? '')),
                 ':email' => trim((string)($data['customer_email'] ?? '')),
-                ':status' => 'pending',
+                ':order_status' => 'new',
+                ':payment_status' => 'unpaid',
                 ':amount' => (float)($data['total_amount'] ?? 0),
             ]);
             $bookingId = (int)$pdo->lastInsertId();
+
+            $busSeats = trim((string)($data['bus_seats'] ?? ''));
+            if ($busSeats !== '') {
+                try {
+                    $pdo->prepare('UPDATE bookings SET bus_seats=:s WHERE id=:id')->execute([':s' => $busSeats, ':id' => $bookingId]);
+                } catch (\Throwable $e) {
+                    // ignore if column missing
+                }
+            }
 
             $tourists = $data['tourists'] ?? [];
             if (is_array($tourists)) {
@@ -61,7 +71,7 @@ final class BookingController
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $response->getBody()->write(json_encode(['ok' => true, 'booking_id' => $bookingId]));
+        $response->getBody()->write(json_encode(['ok' => true, 'booking_id' => $bookingId], JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type', 'application/json');
     }
 }

@@ -57,12 +57,24 @@ $(function(){
   }
   let idx = 0;
   $('#add-tourist').on('click', function(){
-    $('#tourists-list').append(tmpl(idx++));
+    $('#tourists-list').append(tmpl(idx++)); calcTotal();
   }).click();
 
   $('#tourists-list').on('click', '.js-remove', function(){
-    $(this).closest('.tourist').remove();
+    $(this).closest('.tourist').remove(); calcTotal();
   });
+
+  let tourPrice = 0;
+  function loadTour(){
+    const tourId = $('input[name="tour_id"]').val();
+    $.get('/tour/'+tourId, { ajax: 'meta' }, function(resp){ tourPrice = resp && resp.price ? parseFloat(resp.price) : 0; calcTotal(); });
+  }
+  function calcTotal(){
+    const cnt = $('#tourists-list .tourist').length;
+    const total = (tourPrice||0) * (cnt||0);
+    $('input[name="total_amount"]').val(total.toFixed(2));
+  }
+  loadTour();
 
   $('#booking-form').on('submit', function(e){
     e.preventDefault();
@@ -72,16 +84,16 @@ $(function(){
       method: 'POST',
       data: form.serialize(),
       success: function(resp){
-        if(resp.ok){
-          $('#alert').removeClass('d-none alert-danger').addClass('alert-success').text('Заявка отправлена! ID ' + resp.booking_id);
+        if(resp && resp.ok){
+          if(window.toastr){ toastr.success('Заявка отправлена! № '+resp.booking_id); }
           form.trigger('reset');
           $('#tourists-list').empty();
         } else {
-          $('#alert').removeClass('d-none alert-success').addClass('alert-danger').text(resp.error || 'Ошибка');
+          if(window.toastr){ toastr.error((resp && resp.error) ? resp.error : 'Ошибка'); }
         }
       },
-      error: function(){
-        $('#alert').removeClass('d-none alert-success').addClass('alert-danger').text('Ошибка сервера');
+      error: function(xhr){
+        if(window.toastr){ toastr.error('Ошибка сервера: '+xhr.status); }
       }
     });
   });

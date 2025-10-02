@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1 class="mb-3">Настройки сайта</h1>
-<form method="post" action="/admin/settings" class="row g-3">
+<form method="post" action="/admin/settings" enctype="multipart/form-data" class="row g-3" data-xhr>
   <div class="col-md-6">
     <label class="form-label">Название</label>
     <input class="form-control" name="site_name" value="{{ settings.site_name|default('')|e }}">
@@ -26,6 +26,43 @@
   <div class="col-12">
     <label class="form-label">Методы оплаты (через запятую)</label>
     <input class="form-control" name="payment_methods" value="{{ settings.payment_methods|default('online,invoice')|e }}">
+  </div>
+  <div class="col-12">
+    <div class="form-check form-switch mt-2">
+      <input class="form-check-input" type="checkbox" id="bus_seat_selection_enabled" name="bus_seat_selection_enabled" value="1" {{ settings.bus_seat_selection_enabled == '1' ? 'checked' }}>
+      <label class="form-check-label" for="bus_seat_selection_enabled">Включить выбор мест в автобусе</label>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="form-check form-switch mt-2">
+      <input class="form-check-input" type="checkbox" id="sql_debug_enabled" name="sql_debug_enabled" value="1" {{ settings.sql_debug_enabled == '1' ? 'checked' }}>
+      <label class="form-check-label" for="sql_debug_enabled">Показывать SQL debug панель админа</label>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Ширина изображения карточки (px)</label>
+    <input class="form-control" type="number" name="card_image_width" value="{{ settings.card_image_width|default('480')|e }}">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Высота изображения карточки (px)</label>
+    <input class="form-control" type="number" name="card_image_height" value="{{ settings.card_image_height|default('320')|e }}">
+  </div>
+  <div class="col-12"><hr></div>
+  <div class="col-md-6">
+    <label class="form-label">Подпись туроператора (PNG/JPG)</label>
+    <input class="form-control" type="file" name="operator_signature" accept=".png,.jpg,.jpeg">
+    {% set sig = settings.operator_signature_path|default(null) %}
+    {% if sig %}
+      <div class="form-text">Текущий файл: <a href="{{ sig }}" target="_blank">просмотр</a></div>
+    {% endif %}
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Печать туроператора (PNG/JPG)</label>
+    <input class="form-control" type="file" name="operator_stamp" accept=".png,.jpg,.jpeg">
+    {% set st = settings.operator_stamp_path|default(null) %}
+    {% if st %}
+      <div class="form-text">Текущий файл: <a href="{{ st }}" target="_blank">просмотр</a></div>
+    {% endif %}
   </div>
   <div class="col-12">
     <button class="btn btn-primary">Сохранить</button>

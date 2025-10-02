@@ -1,0 +1,68 @@
+{% extends 'agent/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Турист #{{ t.id }}</h1>
+
+<form method="post" action="/agent/tourists/{{ t.id }}/update" class="row g-3" data-xhr>
+  <div class="col-md-6"><label class="form-label">ФИО</label><input class="form-control" name="full_name" value="{{ t.full_name|e }}"></div>
+  <div class="col-md-3"><label class="form-label">Дата рождения</label><input type="date" class="form-control" name="birth_date" value="{{ t.birth_date|e }}"></div>
+  <div class="col-md-3"><label class="form-label">Паспорт</label><input class="form-control" name="passport" value="{{ t.passport|e }}"></div>
+  <div class="col-md-3"><label class="form-label">Телефон</label><input class="form-control" name="phone" value="{{ t.phone|e }}"></div>
+  <div class="col-md-3"><label class="form-label">Email</label><input class="form-control" name="email" value="{{ t.email|e }}"></div>
+  <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
+</form>
+
+<hr>
+<h5>Документы</h5>
+<form method="post" action="/agent/tourists/{{ t.id }}/upload" enctype="multipart/form-data" class="mb-3" data-xhr>
+  <div class="input-group" style="max-width:560px;">
+    <input type="file" name="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
+    <button class="btn btn-outline-primary">Загрузить</button>
+  </div>
+  <div class="form-text">Разрешены: JPG, PNG, PDF</div>
+</form>
+
+<div class="row g-3">
+  {% for f in files %}
+  <div class="col-md-3">
+    <div class="card p-2">
+      {% if f.name ends with '.pdf' %}
+        <div class="text-center text-muted" style="height:160px; display:flex; align-items:center; justify-content:center;">PDF</div>
+      {% else %}
+        <img src="{{ f.url|e }}" class="img-fluid" style="max-height:160px; object-fit:contain;">
+      {% endif %}
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <a class="small" href="{{ f.url|e }}" target="_blank">Открыть</a>
+        <form method="post" action="/agent/tourists/{{ t.id }}/file/delete" data-xhr>
+          <input type="hidden" name="file" value="{{ f.name|e }}">
+          <button class="btn btn-sm btn-outline-danger">Удалить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="text-muted">Файлы не загружены</div>
+  {% endfor %}
+</div>
+
+<hr>
+<h5 class="mb-2">Заявки/Туры этого туриста</h5>
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead><tr><th>Заявка</th><th>Тур</th><th>Даты</th><th></th></tr></thead>
+    <tbody>
+      {% for r in related %}
+      <tr>
+        <td>#{{ r.booking_id }}</td>
+        <td>{{ r.tour_title|e }}</td>
+        <td>{{ r.start_date|e }} — {{ r.end_date|e }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/agent/bookings/{{ r.booking_id }}">Открыть</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="text-center text-muted">Других заявок не найдено</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+{% endblock %}
+

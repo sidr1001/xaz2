@@ -7,6 +7,15 @@ use PDO;
 
 final class SettingsService
 {
+    public static function get(string $key, ?string $default = null): ?string
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare('SELECT `value` FROM settings WHERE `key`=:k LIMIT 1');
+        $stmt->execute([':k'=>$key]);
+        $v = $stmt->fetchColumn();
+        if ($v === false || $v === null) { return $default; }
+        return (string)$v;
+    }
     public static function getAll(): array
     {
         $pdo = Database::getConnection();
@@ -14,6 +23,25 @@ final class SettingsService
         $settings = [];
         foreach ($stmt->fetchAll() as $row) {
             $settings[$row['key']] = $row['value'];
+        }
+        // Defaults
+        if (!isset($settings['bus_seat_selection_enabled'])) {
+            $settings['bus_seat_selection_enabled'] = '0';
+        }
+        if (!isset($settings['card_image_width'])) {
+            $settings['card_image_width'] = '480';
+        }
+        if (!isset($settings['card_image_height'])) {
+            $settings['card_image_height'] = '320';
+        }
+        if (!isset($settings['operator_signature_path'])) {
+            $settings['operator_signature_path'] = is_file(dirname(__DIR__,3).'/public/uploads/operator/signature.png') ? '/uploads/operator/signature.png' : null;
+        }
+        if (!isset($settings['operator_stamp_path'])) {
+            $settings['operator_stamp_path'] = is_file(dirname(__DIR__,3).'/public/uploads/operator/stamp.png') ? '/uploads/operator/stamp.png' : null;
+        }
+        if (!isset($settings['sql_debug_enabled'])) {
+            $settings['sql_debug_enabled'] = '0';
         }
         return $settings;
     }

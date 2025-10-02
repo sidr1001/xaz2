@@ -2,18 +2,59 @@
 
 {% block content %}
 <h1 class="mb-3">Мои заявки</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-sm-2"><input class="form-control" name="id" value="{{ filters.id|e }}" placeholder="№ заявки"></div>
+  <div class="col-sm-3"><input class="form-control" name="created_range" value="{{ filters.created_from and filters.created_to ? (filters.created_from ~ ' - ' ~ filters.created_to) : '' }}" placeholder="Период создания"></div>
+  <div class="col-sm-3"><input class="form-control" name="trip_range" value="{{ filters.trip_from and filters.trip_to ? (filters.trip_from ~ ' - ' ~ filters.trip_to) : '' }}" placeholder="Период поездки"></div>
+  <input type="hidden" name="created_from" value="{{ filters.created_from|e }}">
+  <input type="hidden" name="created_to" value="{{ filters.created_to|e }}">
+  <input type="hidden" name="trip_from" value="{{ filters.trip_from|e }}">
+  <input type="hidden" name="trip_to" value="{{ filters.trip_to|e }}">
+  <div class="col-sm-1">
+    <select name="order_status" class="form-select">
+      <option value="">Статус заказа</option>
+      {% for v,t in {'new':'Новая','in_progress':'В работе','paid':'Оплачен','cancel_request':'Запрос на аннуляцию','cancelled':'Аннуляция','waitlist':'Лист ожидания','confirmed':'Подтвержден','rejected':'Отказ','on_request':'Под запрос'} %}
+      <option value="{{ v }}" {{ filters.order_status==v ? 'selected' }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-1">
+    <select name="payment_status" class="form-select">
+      <option value="">Статус оплаты</option>
+      {% for v,t in {'paid':'Оплачен','unpaid':'Не оплачен','cancelled':'Отменен','partial':'Оплачен не полностью'} %}
+      <option value="{{ v }}" {{ filters.payment_status==v ? 'selected' }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-2 d-flex gap-2">
+    <button class="btn btn-primary">Фильтр</button>
+    <a href="/agent/bookings" class="btn btn-outline-secondary">Сброс</a>
+  </div>
+ </form>
 <div class="table-responsive">
   <table class="table table-striped align-middle">
-    <thead><tr><th>ID</th><th>Тур</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr></thead>
+    <thead><tr><th>ID</th><th>Тур</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
     <tbody>
       {% for b in bookings %}
       <tr>
         <td>{{ b.id }}</td>
         <td>{{ b.tour_title|e }}</td>
         <td>{{ b.customer_name|e }}</td>
-        <td>{{ b.total_amount|e }}</td>
-        <td>{{ b.status|e }}</td>
+        {% set final = (b.total_amount|default(0)) * (1 - (agentCommissionPercent|default(0)/100.0)) %}
+        <td>{{ final|number_format(2, '.', ' ') }}</td>
+        <td>
+          {% set omap = {'new':'Новая','in_progress':'В работе','paid':'Оплачен','cancel_request':'Запрос на аннуляцию','cancelled':'Аннуляция','waitlist':'Лист ожидания','confirmed':'Подтвержден','rejected':'Отказ','on_request':'Под запрос'} %}
+          {% set oclass = {'new':'secondary','in_progress':'info','paid':'success','cancel_request':'warning','cancelled':'dark','waitlist':'secondary','confirmed':'primary','rejected':'danger','on_request':'warning'} %}
+          {% set ov = b.order_status|default('new') %}
+          <span class="badge bg-{{ oclass[ov]|default('secondary') }}">{{ omap[ov]|default(ov) }}</span>
+          /
+          {% set pmap = {'paid':'Оплачен','unpaid':'Не оплачен','cancelled':'Отменен','partial':'Оплачен не полностью'} %}
+          {% set pclass = {'paid':'success','unpaid':'secondary','cancelled':'dark','partial':'warning'} %}
+          {% set pv = b.payment_status|default('unpaid') %}
+          <span class="badge bg-{{ pclass[pv]|default('secondary') }}">{{ pmap[pv]|default(pv) }}</span>
+        </td>
         <td>{{ b.created_at|e }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/agent/bookings/{{ b.id }}">Открыть</a></td>
       </tr>
       {% else %}
       <tr><td colspan="6" class="text-center text-muted">Нет заявок</td></tr>

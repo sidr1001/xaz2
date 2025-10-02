@@ -12,7 +12,15 @@ final class DashboardController
     public function index(Request $request, Response $response): Response
     {
         $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/dashboard.twig');
+        $settings = \App\Service\SettingsService::getAll();
+        $queryLog = $settings['sql_debug_enabled'] === '1' ? \App\Service\Database::getQueryLog() : [];
+        return $view->render($response, 'admin/dashboard.twig', [
+            'breadcrumbs' => [
+                ['title' => 'Админка'],
+            ],
+            'settings' => $settings,
+            'query_log' => $queryLog,
+        ]);
     }
 }
 

@@ -2,16 +2,21 @@
 
 {% block content %}
 <h1 class="mb-3">Создать заявку</h1>
-<form method="post" action="/agent/bookings/store" class="row g-3">
+<form id="agent-booking-form" class="row g-3">
   <input type="hidden" name="tour_id" value="{{ tour_id }}" />
   <div class="col-md-4"><input class="form-control" name="customer_name" placeholder="Имя" required></div>
   <div class="col-md-4"><input class="form-control" name="customer_phone" placeholder="Телефон" required></div>
   <div class="col-md-4"><input class="form-control" type="email" name="customer_email" placeholder="Email" required></div>
-  <div class="col-md-3"><input class="form-control" type="number" step="0.01" name="total_amount" placeholder="Сумма" required></div>
+  <div class="col-md-3"><input class="form-control" type="number" step="0.01" name="total_amount" id="total_amount" placeholder="Сумма" required readonly></div>
   <div class="col-12"><h5>Туристы</h5></div>
   <div class="col-12" id="tlist"></div>
   <div class="col-12"><button type="button" id="addT" class="btn btn-outline-primary btn-sm">Добавить туриста</button></div>
-  <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
+  <div id="bus-seats" class="col-12 d-none">
+    <h5>Выбор мест в автобусе</h5>
+    <div id="seat-grid" class="d-flex flex-wrap" style="max-width: 520px"></div>
+    <input type="hidden" name="bus_seats" id="bus_seats_input" />
+  </div>
+  <div class="col-12"><button id="saveBtn" class="btn btn-primary" disabled>Сохранить</button></div>
 </form>
 {% endblock %}
 
@@ -19,18 +24,153 @@
 <script>
 $(function(){
   function t(i){
-    return `<div class=\"card p-3 mb-2\">
-      <div class=\"row g-2\">
-        <div class=\"col-md-4\"><input class=\"form-control\" name=\"tourists[${i}][full_name]\" placeholder=\"ФИО\" required></div>
-        <div class=\"col-md-2\"><input class=\"form-control\" type=\"date\" name=\"tourists[${i}][birth_date]\"></div>
-        <div class=\"col-md-3\"><input class=\"form-control\" name=\"tourists[${i}][passport]\" placeholder=\"Паспорт\"></div>
-        <div class=\"col-md-2\"><input class=\"form-control\" name=\"tourists[${i}][phone]\" placeholder=\"Телефон\"></div>
-        <div class=\"col-md-3 mt-2\"><input class=\"form-control\" name=\"tourists[${i}][email]\" placeholder=\"Email\"></div>
+    return `<div class="card p-3 mb-2">
+      <div class="row g-2">
+        <div class="col-md-4"><input class="form-control" name="tourists[${i}][full_name]" placeholder="ФИО" required></div>
+        <div class="col-md-2"><input class="form-control" type="date" name="tourists[${i}][birth_date]"></div>
+        <div class="col-md-3"><input class="form-control" name="tourists[${i}][passport]" placeholder="Паспорт"></div>
+        <div class="col-md-2"><input class="form-control" name="tourists[${i}][phone]" placeholder="Телефон"></div>
+        <div class="col-md-3 mt-2"><input class="form-control" name="tourists[${i}][email]" placeholder="Email"></div>
       </div>
     </div>`
   }
   let i=0; $('#addT').on('click', function(){ $('#tlist').append(t(i++)) }); $('#addT').click();
-})
+
+  function ensureList($inp){
+    const $wrap = $inp.parent();
+    $wrap.css('position','relative');
+    let $list = $wrap.find('.autocomplete-list');
+    if($list.length===0){
+      $list = $('<div class="list-group autocomplete-list"></div>').css({position:'absolute', top: '100%', left:0, right:0, 'z-index':10, 'max-height':'200px', overflow:'auto'});
+      $wrap.append($list);
+    }
+    return $list;
+  }
+
+  $('#tlist').on('input', 'input[name^="tourists["][name$="[full_name]"]', function(){
+    const $inp = $(this);
+    const q = $inp.val();
+    const $list = ensureList($inp);
+    if(q.length < 2){ $list.empty().hide(); return; }
+    $.get('/agent/api/tourists/search', { q }, function(resp){
+      if(!resp.ok || resp.items.length===0){ $list.empty().hide(); return; }
+      $list.empty();
+      resp.items.forEach(function(it){
+        const label = (it.full_name||'') + (it.birth_date? ' • '+it.birth_date:'') + (it.passport? ' • '+it.passport:'');
+        const $btn = $('<button type="button" class="list-group-item list-group-item-action"></button>').text(label);
+        $btn.data('it', it);
+        $list.append($btn);
+      });
+      $list.show();
+    });
+  });
+
+  $('#tlist').on('click', '.autocomplete-list .list-group-item', function(){
+    const it = $(this).data('it') || {};
+    const $card = $(this).closest('.card');
+    const $fio = $card.find('[name$="[full_name]"]');
+    const nameAttr = $fio.attr('name');
+    const idxMatch = nameAttr && nameAttr.match(/tourists\[(\d+)\]\[full_name\]/);
+    const idx = idxMatch ? idxMatch[1] : null;
+    if(idx!==null){
+      $card.find('[name="tourists['+idx+'][full_name]"]').val(it.full_name||'');
+      $card.find('[name="tourists['+idx+'][birth_date]"]').val(it.birth_date||'');
+      $card.find('[name="tourists['+idx+'][passport]"]').val(it.passport||'');
+      $card.find('[name="tourists['+idx+'][phone]"]').val(it.phone||'');
+      $card.find('[name="tourists['+idx+'][email]"]').val(it.email||'');
+    }
+    $(this).parent().hide().empty();
+  });
+
+  // Bus seat selection
+  let tourPrice = 0;
+  function loadTour() {
+    const tourId = $('input[name="tour_id"]').val();
+    if(!tourId) return;
+    $.get('/tour/'+tourId, { ajax: 'meta' }, function(resp){
+      if(!resp || !resp.ok) return;
+      tourPrice = resp.price || 0;
+      if(resp.tour_type === 'bus' && resp.seat_enabled === true){
+        $('#bus-seats').removeClass('d-none');
+        renderSeatGrid(resp.seats || 40, resp.taken || []);
+      } else {
+        $('#bus-seats').addClass('d-none');
+      }
+      recalcTotal();
+    });
+  }
+  function renderSeatGrid(total, taken){
+    const $grid = $('#seat-grid');
+    $grid.empty();
+    const selected = new Set();
+    for(let i=1;i<=total;i++){
+      const isTaken = taken.includes(i);
+      const $btn = $('<button type="button" class="btn m-1"></button>')
+        .text(i)
+        .toggleClass('btn-secondary', isTaken)
+        .toggleClass('btn-outline-primary', !isTaken)
+        .prop('disabled', isTaken)
+        .data('seat', i);
+      $grid.append($btn);
+    }
+    $grid.off('click').on('click', 'button', function(){
+      const s = $(this).data('seat');
+      const maxSel = $('#tlist .card.p-3.mb-2').length;
+      if($(this).hasClass('btn-outline-primary')){
+        if(selected.size >= maxSel){ toastr.warning('Количество мест не может превышать число туристов'); return; }
+        $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+        selected.add(s);
+      } else if($(this).hasClass('btn-primary')){
+        $(this).removeClass('btn-primary').addClass('btn-outline-primary');
+        selected.delete(s);
+      }
+      $('#bus_seats_input').val(Array.from(selected).join(','));
+      toggleSave();
+    });
+  }
+  function recalcTotal(){
+    const cnt = $('#tlist .card.p-3.mb-2').length;
+    const total = (tourPrice||0) * (cnt||0);
+    $('#total_amount').val(total.toFixed(2));
+    toggleSave();
+  }
+  $('#addT').on('click', recalcTotal);
+  $('#tlist').on('click', '.js-remove', function(){ $(this).closest('.card').remove(); recalcTotal(); toastr.info('Турист удален'); });
+  // Inject remove buttons into agent form tourists
+  $('#tlist').on('DOMNodeInserted', function(e){
+    const $card = $(e.target).closest('.card');
+    if($card.length && $card.find('.js-remove').length===0){
+      const $btn = $('<div class="mt-2"><button type="button" class="btn btn-outline-danger btn-sm js-remove">Удалить</button></div>');
+      $card.find('.row.g-2').append($btn);
+    }
+  });
+  loadTour();
+
+  function toggleSave(){
+    const cnt = $('#tlist .card.p-3.mb-2').length;
+    const seats = ($('#bus_seats_input').val()||'').split(',').filter(Boolean);
+    const enabled = (!$('#bus-seats').is(':visible')) || (seats.length === cnt && cnt>0);
+    $('#saveBtn').prop('disabled', !enabled);
+  }
+
+  $('#agent-booking-form').on('submit', function(e){
+    e.preventDefault();
+    const cnt = $('#tlist .card.p-3.mb-2').length;
+    const seats = ($('#bus_seats_input').val()||'').split(',').filter(Boolean);
+    if($('#bus-seats').is(':visible') && seats.length !== cnt){ toastr.error('Выберите места для каждого туриста'); return; }
+    const form = $(this);
+    $.ajax({
+      url: '/agent/bookings/store',
+      method: 'POST',
+      data: form.serialize(),
+      success: function(resp){
+        if(resp && resp.ok){ toastr.success('Заявка создана'); window.location.href = '/agent/bookings/'+resp.booking_id; }
+        else { toastr.error((resp && resp.error) ? resp.error : 'Ошибка'); }
+      },
+      error: function(xhr){ toastr.error('Ошибка сервера: '+xhr.status); }
+    });
+  });
+});
 </script>
 {% endblock %}
 

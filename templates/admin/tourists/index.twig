@@ -1,0 +1,46 @@
+{% extends 'admin/layout.twig' %}
+
+{% block content %}
+<h1 class="mb-3">Туристы</h1>
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>ФИО</th>
+        <th>Дата рождения</th>
+        <th>Паспорт</th>
+        <th>Телефон / Email</th>
+        <th>Заявка</th>
+        <th>Файлы</th>
+        <th>Создан</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tourists %}
+      <tr>
+        <td><a href="/admin/tourists/{{ t.id }}/edit">{{ t.id }}</a></td>
+        <td><a href="/admin/tourists/{{ t.id }}/edit">{{ t.full_name|e }}</a></td>
+        <td>{{ t.birth_date|e }}</td>
+        <td>{{ t.passport|e }}</td>
+        <td>{{ t.phone|e }}<br><small>{{ t.email|e }}</small></td>
+        <td>{% if t.booking_id %}<a href="/admin/bookings/{{ t.booking_id }}">#{{ t.booking_id }}</a>{% else %}—{% endif %}</td>
+        <td>
+          {% set dir = '/uploads/tourists/' ~ t.id %}
+          {% set has = false %}
+          {% for f in ['passport.jpg','passport.png','passport.pdf'] %}
+            {% if false %}{% endif %}
+          {% endfor %}
+          <a class="btn btn-sm btn-outline-secondary" href="/admin/tourists/{{ t.id }}/edit">Открыть</a>
+        </td>
+        <td>{{ t.created_at|e }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="text-center text-muted">Нет туристов</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
