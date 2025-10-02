@@ -62,7 +62,8 @@ final class TouristsController
             ':e' => trim((string)($d['email'] ?? '')),
             ':id' => $id,
         ]);
-        return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Сохранено','redirect'=>'/admin/tourists/'.$id.'/edit'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function upload(Request $request, Response $response, array $args): Response
@@ -70,22 +71,24 @@ final class TouristsController
         $id = (int)$args['id'];
         $uploadedFiles = $request->getUploadedFiles();
         $file = $uploadedFiles['file'] ?? null;
-        if (!$file) { return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit?error=nofile')->withStatus(302); }
-        if ($file->getSize() > 10*1024*1024) { return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit?error=size')->withStatus(302); }
+        if (!$file) { $response->getBody()->write(json_encode(['ok'=>false,'error'=>'nofile'], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
+        if ($file->getSize() > 10*1024*1024) { $response->getBody()->write(json_encode(['ok'=>false,'error'=>'size'], JSON_UNESCAPED_UNICODE)); return $response->withHeader('Content-Type','application/json'); }
         $ext = strtolower(pathinfo($file->getClientFilename(), PATHINFO_EXTENSION));
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->buffer($file->getStream()->getContents());
         $file->getStream()->rewind();
         $allowed = ['image/jpeg'=>'jpg','image/png'=>'png','application/pdf'=>'pdf'];
         if (!array_key_exists($mime, $allowed)) {
-            return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit?error=type')->withStatus(302);
+            $response->getBody()->write(json_encode(['ok'=>false,'error'=>'type'], JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type','application/json');
         }
         $dir = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$id;
         if (!is_dir($dir)) mkdir($dir, 0777, true);
         $name = bin2hex(random_bytes(8)).'.'.$allowed[$mime];
         $path = $dir.'/'.$name;
         $file->moveTo($path);
-        return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Файл загружен','redirect'=>'/admin/tourists/'.$id.'/edit'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function deleteFile(Request $request, Response $response, array $args): Response
@@ -95,7 +98,8 @@ final class TouristsController
         $file = basename((string)($d['file'] ?? ''));
         $path = dirname(__DIR__, 3) . '/public/uploads/tourists/'.$id.'/'.$file;
         if (is_file($path)) unlink($path);
-        return $response->withHeader('Location', '/admin/tourists/'.$id.'/edit')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'message'=>'Файл удален','redirect'=>'/admin/tourists/'.$id+'/edit'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     private static function listFiles(int $touristId): array

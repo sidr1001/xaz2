@@ -12,7 +12,7 @@
         <div class="card-body p-4">
             <h3 class="mb-3">Вход</h3>
             {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
-            <form method="post" action="/admin/login">
+            <form method="post" action="/admin/login" data-xhr data-success-reload>
                 <div class="mb-3">
                     <label class="form-label">Логин</label>
                     <input class="form-control" name="login" required>

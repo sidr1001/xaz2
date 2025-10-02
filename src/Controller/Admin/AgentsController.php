@@ -118,7 +118,8 @@ final class AgentsController
     public function contractMode(Request $request, Response $response, array $args): Response
     {
         // Placeholder to store mode in settings or agent-specific table if needed
-        return $response->withHeader('Location', '/admin/agents/'.$args['id'].'/edit')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>'/admin/agents/'.$args['id'].'/edit'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function delete(Request $request, Response $response, array $args): Response

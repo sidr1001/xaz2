@@ -28,7 +28,9 @@ final class PaymentsController
         $file = dirname(__DIR__, 3) . '/public/uploads/documents/' . $bookingId . '/invoice_' . $paymentId . '.pdf';
         PdfService::renderTemplateToFile($request, 'documents/invoice.twig', ['booking' => $booking, 'payment_id' => $paymentId], $file);
 
-        return $response->withHeader('Location', str_replace(dirname(__DIR__, 3) . '/public', '', $file))->withStatus(302);
+        $publicPath = str_replace(dirname(__DIR__, 3) . '/public', '', $file);
+        $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>$publicPath], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 
     public function online(Request $request, Response $response, array $args): Response
@@ -45,8 +47,10 @@ final class PaymentsController
         $tbank = new TBankService();
         $init = $tbank->initPayment($paymentId, $bookingId, (float)$booking['total_amount'], 'Оплата заявки #' . $bookingId);
         if (!empty($init['PaymentURL'])) {
-            return $response->withHeader('Location', $init['PaymentURL'])->withStatus(302);
+            $response->getBody()->write(json_encode(['ok'=>true,'redirect'=>$init['PaymentURL']], JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type','application/json');
         }
-        return $response->withHeader('Location', '/admin/bookings/'.$bookingId.'?error=payment')->withStatus(302);
+        $response->getBody()->write(json_encode(['ok'=>false,'error'=>'payment'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type','application/json');
     }
 }

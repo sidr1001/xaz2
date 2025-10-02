@@ -26,13 +26,12 @@ final class AuthController
 
         if ($login === $validLogin && $password === $validPassword) {
             $_SESSION['admin'] = true;
-            return $response->withHeader('Location', '/admin')->withStatus(302);
+            $response->getBody()->write(json_encode(['ok' => true, 'redirect' => '/admin'], JSON_UNESCAPED_UNICODE));
+            return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $view = Twig::fromRequest($request);
-        return $view->render($response, 'admin/login.twig', [
-            'error' => 'Неверный логин или пароль',
-        ]);
+        $response->getBody()->write(json_encode(['ok' => false, 'error' => 'Неверный логин или пароль'], JSON_UNESCAPED_UNICODE));
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function logout(Request $request, Response $response): Response
