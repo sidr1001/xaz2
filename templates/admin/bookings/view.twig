@@ -4,13 +4,32 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1>Заявка #{{ booking.id }}</h1>
   <div>
-    <form class="d-inline" method="post" action="/admin/bookings/{{ booking.id }}/status">
-      <select class="form-select d-inline w-auto" name="status">
-        <option value="pending" {{ booking.status == 'pending' ? 'selected' }} >pending</option>
-        <option value="confirmed" {{ booking.status == 'confirmed' ? 'selected' }} >confirmed</option>
-        <option value="cancelled" {{ booking.status == 'cancelled' ? 'selected' }} >cancelled</option>
+    <form class="d-inline" method="post" action="/admin/bookings/{{ booking.id }}/order-status" data-xhr data-success-reload>
+      <label class="small me-1">Статус заказа</label>
+      <select class="form-select d-inline w-auto" name="order_status">
+        {% set os = booking.order_status %}
+        <option value="new" {{ os=='new' ? 'selected' }}>Новая</option>
+        <option value="in_progress" {{ os=='in_progress' ? 'selected' }}>В работе</option>
+        <option value="paid" {{ os=='paid' ? 'selected' }}>Оплачен</option>
+        <option value="cancel_request" {{ os=='cancel_request' ? 'selected' }}>Запрос на аннуляцию</option>
+        <option value="cancelled" {{ os=='cancelled' ? 'selected' }}>Аннуляция</option>
+        <option value="waitlist" {{ os=='waitlist' ? 'selected' }}>Лист ожидания</option>
+        <option value="confirmed" {{ os=='confirmed' ? 'selected' }}>Подтвержден</option>
+        <option value="rejected" {{ os=='rejected' ? 'selected' }}>Отказ</option>
+        <option value="on_request" {{ os=='on_request' ? 'selected' }}>Под запрос</option>
       </select>
-      <button class="btn btn-sm btn-primary">Сохранить</button>
+      <button class="btn btn-sm btn-primary">OK</button>
+    </form>
+    <form class="d-inline ms-2" method="post" action="/admin/bookings/{{ booking.id }}/payment-status" data-xhr data-success-reload>
+      <label class="small me-1">Статус оплаты</label>
+      <select class="form-select d-inline w-auto" name="payment_status">
+        {% set ps = booking.payment_status %}
+        <option value="paid" {{ ps=='paid' ? 'selected' }}>Оплачен</option>
+        <option value="unpaid" {{ ps=='unpaid' ? 'selected' }}>Не оплачен</option>
+        <option value="cancelled" {{ ps=='cancelled' ? 'selected' }}>Отменен</option>
+        <option value="partial" {{ ps=='partial' ? 'selected' }}>Оплачен не полностью</option>
+      </select>
+      <button class="btn btn-sm btn-primary">OK</button>
     </form>
     <button id="gen-docs" class="btn btn-sm btn-outline-secondary">Сформировать документы</button>
     <a href="/admin/bookings/{{ booking.id }}/payment/invoice" class="btn btn-sm btn-outline-primary">Счет (PDF)</a>
@@ -25,7 +44,23 @@
         <h5 class="card-title">Клиент</h5>
         <p>{{ booking.customer_name|e }}<br>{{ booking.customer_phone|e }}<br>{{ booking.customer_email|e }}</p>
         <p><strong>Сумма:</strong> {{ booking.total_amount|e }}</p>
+        <p><strong>Статусы:</strong>
+          {% set omap = {'new':'Новая','in_progress':'В работе','paid':'Оплачен','cancel_request':'Запрос на аннуляцию','cancelled':'Аннуляция','waitlist':'Лист ожидания','confirmed':'Подтвержден','rejected':'Отказ','on_request':'Под запрос'} %}
+          {% set oclass = {'new':'secondary','in_progress':'info','paid':'success','cancel_request':'warning','cancelled':'dark','waitlist':'secondary','confirmed':'primary','rejected':'danger','on_request':'warning'} %}
+          {% set ov = booking.order_status|default('new') %}
+          <span class="badge bg-{{ oclass[ov]|default('secondary') }}">{{ omap[ov]|default(ov) }}</span>
+          {% set pmap = {'paid':'Оплачен','unpaid':'Не оплачен','cancelled':'Отменен','partial':'Оплачен не полностью'} %}
+          {% set pclass = {'paid':'success','unpaid':'secondary','cancelled':'dark','partial':'warning'} %}
+          {% set pv = booking.payment_status|default('unpaid') %}
+          <span class="badge bg-{{ pclass[pv]|default('secondary') }}">{{ pmap[pv]|default(pv) }}</span>
+        </p>
         <p><strong>Агент:</strong> {{ booking.agent_login ? booking.agent_login : '—' }}</p>
+        {% if booking.agent_comment %}
+        <div class="mt-3">
+          <label class="form-label">Комментарий агента</label>
+          <div class="border rounded p-2 bg-light">{{ booking.agent_comment|e }}</div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -46,6 +81,13 @@
 </div>
 
 <div id="docs" class="mt-3"></div>
+
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title">Комментарий агента</h5>
+    <div class="form-control" style="min-height: 90px; white-space: pre-wrap;">{{ booking.agent_comment|default('')|e }}</div>
+  </div>
+  </div>
 
 {% endblock %}
 

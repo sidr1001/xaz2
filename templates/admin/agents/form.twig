@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="mb-3">{{ is_edit ? 'Редактировать агента' : 'Добавить агента' }}</h1>
 
-<form method="post" action="{{ is_edit ? '/admin/agents/' ~ agent.id ~ '/update' : '/admin/agents/store' }}" class="row g-3">
+<form method="post" action="{{ is_edit ? '/admin/agents/' ~ agent.id ~ '/update' : '/admin/agents/store' }}" class="row g-3" data-xhr>
     <div class="col-md-6">
         <label class="form-label">Логин</label>
         <input class="form-control" name="login" required value="{{ agent.login|default('')|e }}">
@@ -13,6 +13,10 @@
     <div class="col-md-6">
         <label class="form-label">Пароль</label>
         <input class="form-control" name="password" required value="{{ agent.password|default('')|e }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">% агентского вознаграждения</label>
+        <input class="form-control" type="number" step="0.01" name="agent_commission_percent" value="{{ agent.agent_commission_percent|default('0')|e }}">
     </div>
     <div class="col-12">
         <label class="form-label">Права (JSON или текст)</label>
@@ -23,5 +27,37 @@
         <a class="btn btn-secondary" href="/admin/agents">Отмена</a>
     </div>
 </form>
+
+{% if is_edit %}
+<hr>
+<h5 class="mb-3">Данные агента (просмотр)</h5>
+<div class="row g-2">
+  {% set p = profile|default({}) %}
+  <div class="col-md-3"><span class="text-muted small">Email</span><div>{{ p.email|default('—')|e }}</div></div>
+  <div class="col-md-3"><span class="text-muted small">Телефон</span><div>{{ p.phone|default('—')|e }}</div></div>
+  <div class="col-md-3"><span class="text-muted small">ФИО</span><div>{{ p.last_name|default('')|e }} {{ p.first_name|default('')|e }} {{ p.middle_name|default('')|e }}</div></div>
+  <div class="col-md-3"><span class="text-muted small">ИНН</span><div>{{ p.inn|default('—')|e }}</div></div>
+  <div class="col-md-4"><span class="text-muted small">Организация</span><div>{{ p.org_name|default('—')|e }}</div></div>
+  <div class="col-md-4"><span class="text-muted small">Краткое название</span><div>{{ p.org_short_name|default('—')|e }}</div></div>
+  <div class="col-md-4"><span class="text-muted small">Юр. адрес</span><div>{{ p.legal_address|default('—')|e }}</div></div>
+  <div class="col-md-4"><span class="text-muted small">Р/с</span><div>{{ p.account_number|default('—')|e }}</div></div>
+  <div class="col-md-4"><span class="text-muted small">Банк</span><div>{{ p.bank_name|default('—')|e }}</div></div>
+  <div class="col-md-4"><span class="text-muted small">Договор</span><div>{{ p.contract_number|default('—')|e }} с {{ p.contract_date_from|default('—')|e }} по {{ p.contract_date_to|default('—')|e }}</div></div>
+</div>
+
+<hr>
+<h5 class="mb-3">Агентский договор</h5>
+<form method="post" action="/admin/agents/{{ agent.id }}/contract/upload" enctype="multipart/form-data" class="mb-2">
+  <div class="input-group" style="max-width:520px;">
+    <input type="file" class="form-control" name="contract" accept="application/pdf" required>
+    <button class="btn btn-outline-primary">Загрузить PDF</button>
+  </div>
+  {% if contract_uploaded %}
+  <div class="mt-2">
+    <a class="btn btn-sm btn-outline-secondary" href="{{ contract_url }}" target="_blank">Скачать загруженный договор</a>
+  </div>
+  {% endif %}
+</form>
+{% endif %}
 {% endblock %}
 

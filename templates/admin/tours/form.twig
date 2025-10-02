@@ -5,7 +5,7 @@
 {% block content %}
 <h1 class="mb-3">{{ is_edit ? 'Редактировать тур' : 'Добавить тур' }}</h1>
 
-<form method="post" enctype="multipart/form-data" action="{{ is_edit ? '/admin/tours/' ~ tour.id ~ '/update' : '/admin/tours/store' }}" class="row g-3">
+<form method="post" enctype="multipart/form-data" action="{{ is_edit ? '/admin/tours/' ~ tour.id ~ '/update' : '/admin/tours/store' }}" class="row g-3" data-xhr>
     <div class="col-md-6">
         <label class="form-label">Название</label>
         <input class="form-control" name="title" required value="{{ tour.title|default('')|e }}">
@@ -46,6 +46,10 @@
         </select>
     </div>
     <div class="col-md-3">
+        <label class="form-label">Мест в автобусе (если автобус)</label>
+        <input type="number" class="form-control" name="bus_seats_total" value="{{ tour.bus_seats_total|default('40')|e }}">
+    </div>
+    <div class="col-md-3">
         <label class="form-label">Длительность (дней)</label>
         <input type="number" class="form-control" name="duration_days" value="{{ tour.duration_days|default('')|e }}">
     </div>
@@ -69,9 +73,16 @@
     </div>
 </form>
 {% block scripts %}
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
 <script>
-tinymce.init({ selector:'#editor',apiKey:'u5owg1z5cc5c9yf5b2bfgx0y6l0vdfn82a2jkzmrp4py8229', menubar:false, plugins:'link lists image table code', toolbar:'undo redo | styles | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code' });
+tinymce.init({
+  selector: '#editor',
+  menubar: false,
+  plugins: 'link lists image table code',
+  toolbar: 'undo redo | styles | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+  branding: false,
+  readonly: false
+});
 </script>
 {% endblock %}
 {% endblock %}

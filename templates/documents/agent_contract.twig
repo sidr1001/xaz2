@@ -1,0 +1,23 @@
+<h1>Агентский договор</h1>
+<p>Стороны: {{ profile.org_name|e }} ({{ profile.org_short_name|e }}), в лице {{ profile.ceo|e }}, действующего на основании {{ profile.ceo_basis|e }}.</p>
+<p>ИНН: {{ profile.inn|e }}, ОГРН: {{ profile.ogrn|e }}, ОКПО: {{ profile.okpo|e }}</p>
+<p>Юридический адрес: {{ profile.legal_address|e }}, Фактический адрес: {{ profile.actual_address|e }}</p>
+<p>Банк: {{ profile.bank_name|e }}, БИК/Код банка: {{ profile.bank_code|e }}, Адрес банка: {{ profile.bank_address|e }}</p>
+<p>Р/с: {{ profile.account_number|e }}, Валюта: {{ profile.account_currency|e }}, ИНН банка: {{ profile.bank_inn|e }}, КПП: {{ profile.kpp|e }}</p>
+<p>Номер договора: {{ profile.contract_number|e }}, действует с {{ profile.contract_date_from|e }} по {{ profile.contract_date_to|e }}</p>
+
+<p>Настоящий договор составлен автоматически на основании данных профиля агента.</p>
+
+<div style="margin-top:60px; display:flex; align-items:flex-end; gap:60px;">
+  <div>
+    <div style="height:60px; width:200px; border-bottom:1px solid #333; position:relative;">
+      {% set sig = signature_fs is defined and signature_fs ? signature_fs : ('/uploads/agents/' ~ profile.agent_id ~ '/signature.png') %}
+      <img src="{{ sig }}" style="position:absolute; left:0; bottom:0; max-height:60px; max-width:200px;" alt="signature">
+    </div>
+    <div class="small text-muted">Подпись представителя</div>
+  </div>
+  <div style="position:relative; width:140px; height:140px;">
+    {% set st = stamp_fs is defined and stamp_fs ? stamp_fs : ('/uploads/agents/' ~ profile.agent_id ~ '/stamp.png') %}
+    <img src="{{ st }}" style="position:absolute; left:0; top:0; max-width:140px; max-height:140px; opacity:0.85;" alt="stamp">
+  </div>
+</div>
