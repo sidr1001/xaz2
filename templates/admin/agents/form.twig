@@ -47,7 +47,7 @@
 
 <hr>
 <h5 class="mb-3">Агентский договор</h5>
-<form method="post" action="/admin/agents/{{ agent.id }}/contract/upload" enctype="multipart/form-data" class="mb-2">
+<form method="post" action="/admin/agents/{{ agent.id }}/contract/upload" enctype="multipart/form-data" class="mb-2" data-xhr>
   <div class="input-group" style="max-width:520px;">
     <input type="file" class="form-control" name="contract" accept="application/pdf" required>
     <button class="btn btn-outline-primary">Загрузить PDF</button>
