@@ -5,7 +5,7 @@
 <form id="agent-booking-form" class="row g-3">
   <input type="hidden" name="tour_id" value="{{ tour_id }}" />
   <div class="col-md-4"><input class="form-control" name="customer_name" placeholder="Имя" required></div>
-  <div class="col-md-4"><input class="form-control" name="customer_phone" placeholder="Телефон" required></div>
+  <div class="col-md-4"><input class="form-control js-mask-phone" name="customer_phone" placeholder="Телефон" required></div>
   <div class="col-md-4"><input class="form-control" type="email" name="customer_email" placeholder="Email" required></div>
   <div class="col-md-3"><input class="form-control" type="number" step="0.01" name="total_amount" id="total_amount" placeholder="Сумма" required readonly></div>
   <div class="col-12"><h5>Туристы</h5></div>
@@ -28,8 +28,8 @@ $(function(){
       <div class="row g-2">
         <div class="col-md-4"><input class="form-control" name="tourists[${i}][full_name]" placeholder="ФИО" required></div>
         <div class="col-md-2"><input class="form-control" type="date" name="tourists[${i}][birth_date]"></div>
-        <div class="col-md-3"><input class="form-control" name="tourists[${i}][passport]" placeholder="Паспорт"></div>
-        <div class="col-md-2"><input class="form-control" name="tourists[${i}][phone]" placeholder="Телефон"></div>
+        <div class="col-md-3"><input class="form-control js-mask-passport" name="tourists[${i}][passport]" placeholder="Паспорт"></div>
+        <div class="col-md-2"><input class="form-control js-mask-phone" name="tourists[${i}][phone]" placeholder="Телефон"></div>
         <div class="col-md-3 mt-2"><input class="form-control" name="tourists[${i}][email]" placeholder="Email"></div>
       </div>
     </div>`

@@ -18,7 +18,7 @@
   <div class="col-md-4"><label class="form-label">Фактический адрес</label><input class="form-control" name="actual_address" value="{{ data.actual_address|e }}"></div>
 
   <div class="col-md-4"><label class="form-label">ИНН</label><input class="form-control js-mask-inn" name="inn" value="{{ data.inn|e }}" placeholder="10 или 12 цифр"></div>
-  <div class="col-md-4"><label class="form-label">ОГРН</label><input class="form-control" name="ogrn" value="{{ data.ogrn|e }}"></div>
+  <div class="col-md-4"><label class="form-label">ОГРН</label><input class="form-control js-mask-ogrn" name="ogrn" value="{{ data.ogrn|e }}"></div>
   <div class="col-md-4"><label class="form-label">ОКПО</label><input class="form-control js-mask-okpo" name="okpo" value="{{ data.okpo|e }}" placeholder="8 или 10 цифр"></div>
 
   <div class="col-md-4"><label class="form-label">Генеральный директор</label><input class="form-control" name="ceo" value="{{ data.ceo|e }}"></div>
@@ -28,7 +28,7 @@
   <div class="col-md-4"><label class="form-label">Дата начала действия</label><input class="form-control" type="date" name="contract_date_from" value="{{ data.contract_date_from|e }}"></div>
   <div class="col-md-4"><label class="form-label">Дата окончания</label><input class="form-control" type="date" name="contract_date_to" value="{{ data.contract_date_to|e }}"></div>
 
-  <div class="col-md-4"><label class="form-label">Расчетный счет</label><input class="form-control" name="account_number" value="{{ data.account_number|e }}"></div>
+  <div class="col-md-4"><label class="form-label">Расчетный счет</label><input class="form-control js-mask-account" name="account_number" value="{{ data.account_number|e }}"></div>
   <div class="col-md-4"><label class="form-label">Валюта счета</label><input class="form-control" name="account_currency" value="{{ data.account_currency|e }}"></div>
   <div class="col-md-4"><label class="form-label">Наименование банка</label><input class="form-control" name="bank_name" value="{{ data.bank_name|e }}"></div>
   <div class="col-md-4"><label class="form-label">Код банка</label><input class="form-control" name="bank_code" value="{{ data.bank_code|e }}"></div>
@@ -67,6 +67,8 @@ $(function(){
   $('.js-mask-inn').inputmask({ mask: '9{10,12}', greedy: false, placeholder: '' });
   $('.js-mask-kpp').inputmask({ mask: '9{9}', placeholder: '' });
   $('.js-mask-okpo').inputmask({ mask: '9{8,10}', greedy: false, placeholder: '' });
+  $('.js-mask-ogrn').inputmask({ mask: '9{13,15}', greedy: false, placeholder: '' });
+  $('.js-mask-account').inputmask({ mask: '99999999999999999999', placeholder: '' });
 });
 </script>
 {% endblock %}

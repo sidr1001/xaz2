@@ -6,8 +6,8 @@
 <form method="post" action="/admin/tourists/{{ t.id }}/update" class="row g-3" data-xhr data-success-reload>
   <div class="col-md-6"><label class="form-label">ФИО</label><input class="form-control" name="full_name" value="{{ t.full_name|e }}"></div>
   <div class="col-md-3"><label class="form-label">Дата рождения</label><input type="date" class="form-control" name="birth_date" value="{{ t.birth_date|e }}"></div>
-  <div class="col-md-3"><label class="form-label">Паспорт</label><input class="form-control" name="passport" value="{{ t.passport|e }}"></div>
-  <div class="col-md-3"><label class="form-label">Телефон</label><input class="form-control" name="phone" value="{{ t.phone|e }}"></div>
+  <div class="col-md-3"><label class="form-label">Паспорт</label><input class="form-control js-mask-passport" name="passport" value="{{ t.passport|e }}"></div>
+  <div class="col-md-3"><label class="form-label">Телефон</label><input class="form-control js-mask-phone" name="phone" value="{{ t.phone|e }}"></div>
   <div class="col-md-3"><label class="form-label">Email</label><input class="form-control" name="email" value="{{ t.email|e }}"></div>
   <div class="col-12"><button class="btn btn-primary">Сохранить</button></div>
 </form>

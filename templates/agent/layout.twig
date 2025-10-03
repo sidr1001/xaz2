@@ -33,7 +33,29 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.9/dist/jquery.inputmask.min.js"></script>
 <script>$(function(){ var t=document.querySelector('meta[name="csrf-token"]'); if(t){ $.ajaxSetup({ headers: { 'X-CSRF-Token': t.getAttribute('content') } }); } });</script>
+<script>
+$(function(){
+  // Input masks
+  $('.js-mask-phone').inputmask({ mask: '+7 (999) 999-99-99', placeholder: '+7 (___) ___-__-__' });
+  $('.js-mask-passport').inputmask({ mask: '9999 999999', placeholder: '____ ______' });
+  $('.js-mask-price').inputmask({ 
+    alias: 'numeric', 
+    groupSeparator: ' ', 
+    radixPoint: '.', 
+    digits: 2, 
+    autoGroup: true,
+    rightAlign: false,
+    placeholder: '0.00'
+  });
+  $('.js-mask-inn').inputmask({ mask: '9{10,12}', greedy: false, placeholder: '' });
+  $('.js-mask-kpp').inputmask({ mask: '9{9}', placeholder: '' });
+  $('.js-mask-okpo').inputmask({ mask: '9{8,10}', greedy: false, placeholder: '' });
+  $('.js-mask-ogrn').inputmask({ mask: '9{13,15}', greedy: false, placeholder: '' });
+  $('.js-mask-account').inputmask({ mask: '99999999999999999999', placeholder: '' });
+});
+</script>
 <script src="/assets/js/agent.js"></script>
 {% block scripts %}{% endblock %}
 </body>
